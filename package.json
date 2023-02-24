@@ -1,4 +1,9 @@
 {
   "name": "19-full",
-  "packageManager": "yarn@3.4.1"
+  "packageManager": "yarn@3.4.1",
+  "scripts": {
+		"start": "cd backend && npm start",
+    "build": "cd backend && npm install && cd ../frontend && npm install && npm run build",
+		"install": "cd backend && npm install && cd ../frontend && npm install"
+	}
 }
