@@ -1,7 +1,17 @@
 import logo from './logo.svg';
 import './App.css';
 
+import useWebSocket from 'react-use-websocket';
+const WS_URL = 'ws://localhost:3080';
+
 function App() {
+
+  useWebSocket(WS_URL, {
+    onOpen: () => {
+      console.log('WebSocket connection established.');
+    }
+  });
+
   return (
     <div className="App">
       <header className="App-header">
