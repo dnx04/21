@@ -508,6 +508,7 @@ function joinRoom(userId, data) {
     }
     else {
       addPlayerToRoom(roomCode, userId);
+      userInfo[userId].room = roomCode;
       startGame(roomCode);
       response = {
         response: RESPONSE_TYPE.OK,
