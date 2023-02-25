@@ -1,5 +1,5 @@
 {
-  "name": "21Online-full",
+  "name": "21online-full",
   "packageManager": "yarn@3.4.1",
   "scripts": {
 		"start": "cd backend && npm start",

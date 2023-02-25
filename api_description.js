@@ -65,6 +65,7 @@
         avatar : int = number indicating avatar of player
         onTable : int[] = cards on table for that player
           ontable[0] is the face-down card and is replaced with -1 for the opponent
+        spellTable : string[] = spell cards played this round for that player, as well as those that are active this round; see constants.js/SPELL.
         spellCards : string[] = spell cards in hand for that player; see constants.js/SPELL.
           For the opponent, this arrray is empty
 

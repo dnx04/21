@@ -1,4 +1,4 @@
-export const ACTION = {
+ const ACTION = {
     SET_USERNAME: 'setUsername',
     SET_AVATAR: 'setAvatar',
     CREATE_ROOM: 'createRoom',
@@ -6,7 +6,7 @@ export const ACTION = {
     PLAY_MOVE: 'playAction'
 };
 
-export const RESPONSE_TYPE = {
+ const RESPONSE_TYPE = {
     ERROR: 'error',
     OK: 'ok',
     ROOM_CODE: 'roomCode',
@@ -14,7 +14,7 @@ export const RESPONSE_TYPE = {
     GAME_STATE: 'gameState'
 };
 
-export const MOVE_TYPE = {
+const MOVE_TYPE = {
     DRAW: 'draw',
     PLAY_SPELL: 'playSpell',
     END_TURN: 'endTurn',
@@ -22,11 +22,27 @@ export const MOVE_TYPE = {
                          // player is ready to start new round
 };
 
-export const ERROR = {
+const SPELL = {
+    
+}
+
+const ERROR = {
     EMPTY_USERNAME: 'Username must not be empty',
     INVALID_AVATAR: 'Invalid avatar ID',
     ALREADY_IN_ROOM: 'User is already in a room',
     ROOM_FULL: 'Room is full',
     ROOM_NOT_EXIST: 'Room does not exist',
-    NOT_YOUR_TURN: 'It is not your turn'
+    NOT_YOUR_TURN: 'It is not your turn',
+    TABLE_FULL: 'Table is full. You can only draw a maximum of 5 cards per round',
+    INVALID_INDEX: 'Invalid card index'
 };
+
+module.exports = {
+    ACTION: ACTION,
+    RESPONSE_TYPE: RESPONSE_TYPE,
+    MOVE_TYPE: MOVE_TYPE,
+    ERROR: ERROR,
+    AVATAR_CNT: 5,
+    SPELL_PER_ROUND: 3,
+    MAX_SPELL_IN_HAND: 7,
+}
