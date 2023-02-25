@@ -80,5 +80,5 @@
       targetScore : int = target score for this round
     }
   * GAME_STATE is sent at game start once the second player joins, and after each valid move.
-    Frontend, please listen for GAME_STATE after sending JOIN/CREATE_ROOM to initalize the game UI.
+    Frontend, please listen for GAME_STATE after sending JOIN/CREATE_ROOM to initalize the game UI. FE: Okay bro
 */
