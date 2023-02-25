@@ -6,7 +6,7 @@
     PLAY_MOVE: 'playAction'
 };
 
- const RESPONSE_TYPE = {
+const RESPONSE_TYPE = {
     ERROR: 'error',
     OK: 'ok',
     ROOM_CODE: 'roomCode',
@@ -15,9 +15,9 @@
 };
 
 const MOVE_TYPE = {
-    DRAW: 'draw',
+    DRAW: 'draw', // Drawing will pass your turn to your opponent
     PLAY_SPELL: 'playSpell',
-    END_TURN: 'endTurn',
+    END_TURN: 'endTurn', // End turn without drawing; two endTurns in a row ends the round
     CONTINUE: 'continue' // Used e.g. after round/game end to indicate that 
                          // player is ready to start new round/game. 
                          // Once both player sends this move new round/game will start
@@ -34,7 +34,8 @@ const SPELL = {
     REMOVE: "Remove",  // Return opponent's last drawn card (4)
     RETURN: "Return",  // Return player's last drawn card (4)
     SWAP: "Swap", // Swap the players' last drawn face-up card (3)
-    TRADE: "Trade", // Trade 2 other spells at random for 3 from the deck, cannot be used if under 3 (3)
+    TRADE: "Trade", // Trade 2 other spells in hand at random for 3 from the deck, 
+                    // cannot be used if you dont have 2 other spells (3)
     GREED: "Greed", // Increase attack by (number of opponent spells in hand)/2 rounded up until removed (2)
                     // This increase *does not* change if the opponent adds or removes spells, because otherwise
                     // coding would be a pain in the butt

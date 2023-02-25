@@ -58,17 +58,13 @@
 
   Possible server broadcasts:
 
-  - GAME_LOG {
-    log: string[] = list of game log lines, to be displayed to client
-  }
-
   - GAME_STATE = {
       player : object[2] = {
         username : string = username of player
         avatar : int = number indicating avatar of player
         onTable : int[] = cards on table for that player
           ontable[0] is the face-down card and is replaced with -1 for the opponent
-        spellTable : string[] = spell cards played this round for that player, as well as those that are active this round; 
+        spellTable : string[] = spell cards that are currently active for that player, as well as the most recent instant spell card.
           see constants.js/SPELL.
         spellCards : string[] = spell cards in hand for that player; see constants.js/SPELL.
           For the opponent, all elements of this array are replaced with -1 
