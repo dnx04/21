@@ -14,6 +14,9 @@
     data : object = data according to the specification of the sent responseType
   }
 
+  All data should be sent over WebSocket using react-use-websocket, see
+  https://blog.logrocket.com/websocket-tutorial-real-time-node-react/ for guidance
+
   Possible actions:
   - SET_USERNAME = {
     username : string = new username to set
