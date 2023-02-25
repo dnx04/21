@@ -34,7 +34,8 @@
     - GAME_STATE = {
       player : object[2] = {
         username : string = username of player
-        onTable : int[] = cards on table for that player.
+        avatar : int = number indicating avatar of player
+        onTable : int[] = cards on table for that player
           ontable[0] is the face-down card and is replaced with -1 for the opponent
         spellCards : string[] = spell cards in hand for that player; see constants.js/SPELL.
           For the opponent, this arrray is empty
