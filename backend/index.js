@@ -4,8 +4,9 @@ const path = require("path");
 const { WebSocketServer } = require('ws');
 const http = require('http');
 const { v4: uuidv4 } = require('uuid');
-
+const { ACTIONS } = require('constants');
 /* WEBSOCKET */
+
 
 const server = http.createServer();
 const wsServer = new WebSocketServer({ server });
@@ -16,8 +17,9 @@ server.listen(actualWsPort, () => {
   console.log(`WebSocket server is running on port ${actualWsPort}`);
 });
 
-// I'm maintaining all active connections in this object
+// I'm maintaining all active users in this object
 const clients = {};
+const usernames = {};
 
 // A new client connection request received
 wsServer.on('connection', function(connection) {
@@ -30,7 +32,7 @@ wsServer.on('connection', function(connection) {
   console.log(`${userId} connected.`);
 });
 
-
+wsServer.on()
 
 
 
