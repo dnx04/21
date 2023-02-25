@@ -13,38 +13,106 @@ const usernameContext = createContext({}) // primitive type
 const roomcodeContext = createContext({})
 const WSContext = createContext({}) // not primitive
 
-function RulesSec() { 
-
+function Deck(props) { 
+  return (
+    <div id = "Deck"  className='card'>
+      Cards left: {props.numLeft}
+    </div>
+  )
 }
 
-function Avatar(props) { 
+function TargetScore(props) { 
+  return (
+    <div id = 'TargetScore'>
+        target score: {props.targetScore}
+    </div>
+  )
+}
 
+function Hand(props) { 
+  let cards = props.cardIds
+  while cards.length
+  console.log(props.cardIds)
+  return (
+    <div id = "Hand">
+      {
+        props.cardIds.map((cardId) => <Card cardName={cardId}/>)
+        // props.cardIds.map((cardId) => {<div>dlkdkljkkkk</div>} ) does not work. Why??????????
+      }
+    </div>
+  )
+}
+
+function EndTurn(props) { 
+  return (
+    <div id = "EndTurn">
+
+    </div>
+  )
+}
+
+function Options(props) { 
+  return (
+    <div id='Options' className = 'flex-vertical-stretch'>
+        <Deck numLeft = {11 - props.turn}/>
+        <TargetScore targetScore = {props.targetScore}/>
+        <Hand cardIds = {props.player[props.you].spellCards}/>
+        <EndTurn/>
+    </div>
+  )
+}
+
+
+function Avatar(props) { 
+  return <div>
+    Avatear
+  </div>
 }
 
 function HealthBar(props) { 
-}
-
-function NumberCard(props) { 
-   
-}
-
-function SpellCard(props) { 
-}
-
-
-function Deck(props) { 
-  return 
-    <div className='Deck'>
-      Trumpcards
+  return (
+    <div className="health-bar">
+      dlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkj
     </div>
+  )
+}
+
+function Card(props) { 
+  return (
+    <div className='card'>
+      Card: {props.cardName}
+    </div>
+  )
+}
+
+function CardTable(props) { 
+  const cards = props.cardIds.map(cardId => <Card cardName = {cardId}/>)
+  return (
+    <div  className="card-table">
+        {cards}
+    </div>
+  )
 }
 
 function Player(props) { 
-  return (
-    <div className='Player'>
-      {props}
-    </div>
-  )
+  if(props.isYou) {
+    return (
+      <div className='flex-vertical-center'>
+        <CardTable cardIds = {props.spellTable} className="card-table"/>
+        <CardTable cardIds = {props.onTable} className="card-table"/>
+        <HealthBar avatar = {props.avatar} health = {props.health} className="health-bar"/>
+      </div>
+    )
+  }
+  else { 
+    return (
+      <div className='flex-vertical-center'>
+        <HealthBar avatar = {props.avatar} health = {props.health} className="health-bar"/>
+        <CardTable cardIds = {props.onTable} className="card-table"/>
+        <CardTable cardIds = {props.spellTable} className="card-table"/>
+      </div>
+    )
+  }
 }
 
 function GameplayPage() { 
@@ -80,18 +148,22 @@ function GameplayPage() {
   let youId = 0, opId = 1; 
 
   useEffect(() => {
-    setGamestate({
-      ...lastJsonMessage.data
-    })
-    youId = gamestate.you; 
-    opId = 1 - youId; 
+    if(lastJsonMessage != null) { 
+      setGamestate({
+        ...lastJsonMessage.data
+      })
+      youId = gamestate.you; 
+      opId = 1 - youId; 
+    }
   }, [lastJsonMessage])
   
   return (
-    <div className='GameplayPage Page'>
-      <Deck/>
-      <Player {...gamestate.player[youId]} isWinner = {youId === gamestate.winner} thisTurn = {youId === gamestate.turn} isYou = {true}/>
-      <Player {...gamestate.player[opId]} isWinner = {opId === gamestate.winner} thisTurn = {opId === gamestate.turn} isYou = {false}/>
+    <div id = 'GameplayPage' className='Page full-span'>
+      <Options {...gamestate} />
+      <div className = "full-span vertical-grid-2">
+        <Player {...gamestate.player[opId]} isWinner = {opId === gamestate.winner} thisTurn = {opId === gamestate.turn} isYou = {false}/>
+        <Player {...gamestate.player[youId]} isWinner = {youId === gamestate.winner} thisTurn = {youId === gamestate.turn} isYou = {true}/>
+      </div>
     </div>
   )
 }
@@ -106,10 +178,10 @@ function UsernamePage() {
   })
 
   return (
-    <div className='UsernamePage Page'>
-      <form onSubmit={_setUsername}>
-        <input onChange={(e) => { setFormcontent(e.target.value)}} type="text" placeholder='Enter your name'/>
-        <button type="submit">Let's go!</button>
+    <div id = 'UsernamePage' className='Page full-span flex-center-center'>
+      <form onSubmit={_setUsername} className = 'flex-vertical-stretch'>
+        <input onChange={(e) => { setFormcontent(e.target.value)}} type="text" placeholder='Enter your name' className='form-input'/>
+        <button type="submit" className='form-button'>Let's go!</button>
       </form>
     </div>
   )
@@ -129,12 +201,14 @@ function LandingPage() {
   })
 
   return (
-    <div className='LandingPage Page'>
-      <button onClick={createRoom}>Create a new room</button>
-      <form onSubmit={enterRoom}>
-        <input onChange={(e) => { setFormcontent(e.target.value)}} type="text" placeholder='Enter a room code'/>
-        <button type="submit">Enter an existing room</button>
-      </form>
+    <div id = 'LandingPage' className='Page full-span flex-center-center'>
+      <div className='flex-vertical-stretch'>
+        <button onClick={createRoom} className = 'form-button'>Create a new room</button>
+        <form onSubmit={enterRoom} className = 'flex-vertical-stretch'>
+          <input onChange={(e) => { setFormcontent(e.target.value)}} type="text" placeholder='Enter a room code' className='form-input'/>
+          <button type="submit" className='form-button'>Enter an existing room</button>
+        </form>
+      </div>
     </div>
   )
 }
@@ -149,16 +223,18 @@ function App() {
   }); // this connection is closed when the object is destructed? 
 
   return ( // wrapping a state hook inside a context just to update? seems really stupid
-      <usernameContext.Provider value = {{username, setUsername}} >
-        <roomcodeContext.Provider value = {{roomcode, setRoomcode}} >
-          <WSContext.Provider value = {{sendJsonMessage, lastJsonMessage, readyState}}>
-            {roomcode == '' && <LandingPage/>} 
-            {/* JSX code must be wrapped inside {} */}
-            {roomcode != '' && username == '' && <UsernamePage/>}
-            {roomcode != '' && username != '' && <GameplayPage/>}
-          </WSContext.Provider>
-        </roomcodeContext.Provider>
-      </usernameContext.Provider>
+    <div className='full-span'>
+        <usernameContext.Provider value = {{username, setUsername}} >
+          <roomcodeContext.Provider value = {{roomcode, setRoomcode}} >
+            <WSContext.Provider value = {{sendJsonMessage, lastJsonMessage, readyState}}>
+              {roomcode == '' && <LandingPage/>} 
+              {/* JSX code must be wrapped inside {} */}
+              {roomcode != '' && username == '' && <UsernamePage/>}
+              {roomcode != '' && username != '' && <GameplayPage/>}
+            </WSContext.Provider>
+          </roomcodeContext.Provider>
+        </usernameContext.Provider>
+      </div>
   );
 }
 
