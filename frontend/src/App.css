@@ -83,7 +83,9 @@
 }
 
 #EndTurn { 
-  background-color: yellow;
+  background-color: white;
+  height: 5vh;
+  text-align: center;
 }
 
 #TargetScore { 

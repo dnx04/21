@@ -5,13 +5,16 @@ import { createContext, useCallback, useContext, useEffect } from 'react';
 import useWebSocket from 'react-use-websocket';
 import { useState } from 'react';
 
+
+const { RESPONSE_TYPE, ERROR, ACTION, MOVE_TYPE, SPELL } = require('./constants');
+const { AVATAR_CNT, SPELL_PER_TURN, MAX_SPELL_IN_HAND, MAX_CARD_ON_TABLE, TIE, GAME_END, ROUND_END, START_HEALTH } = require('./constants');
+
 const WS_URL = 'ws://localhost:3080';
 
 // broadcasted to all descendants: ROOM, USERNAME, WebSocket
 
 const usernameContext = createContext({}) // primitive type
 const roomcodeContext = createContext({})
-const WSContext = createContext({}) // not primitive
 
 function Deck(props) { 
   return (
@@ -30,13 +33,18 @@ function TargetScore(props) {
 }
 
 function Hand(props) { 
-  let cards = props.cardIds
-  while cards.length
-  console.log(props.cardIds)
+  let cards = []
+  for(let i = 0; i < 16; i += 1) { 
+    if(i >= props.cardIds.length) { 
+      cards.push(-1); 
+    }
+    else cards.push(props.cardIds[i]); 
+  }
+  console.log(cards)
   return (
     <div id = "Hand">
       {
-        props.cardIds.map((cardId) => <Card cardName={cardId}/>)
+        cards.map((cardId) => <Card cardName={cardId}/>)
         // props.cardIds.map((cardId) => {<div>dlkdkljkkkk</div>} ) does not work. Why??????????
       }
     </div>
@@ -46,7 +54,7 @@ function Hand(props) {
 function EndTurn(props) { 
   return (
     <div id = "EndTurn">
-
+      End Turn
     </div>
   )
 }
@@ -116,7 +124,6 @@ function Player(props) {
 }
 
 function GameplayPage() { 
-  const {lastJsonMessage, sendJsonMessage, readyState} = useContext(WSContext)
   const [gamestate, setGamestate] = useState({
     player: [
       {
@@ -147,15 +154,15 @@ function GameplayPage() {
 
   let youId = 0, opId = 1; 
 
-  useEffect(() => {
-    if(lastJsonMessage != null) { 
-      setGamestate({
-        ...lastJsonMessage.data
-      })
-      youId = gamestate.you; 
-      opId = 1 - youId; 
-    }
-  }, [lastJsonMessage])
+  // useEffect(() => {
+  //   if(lastJsonMessage != null) { 
+  //     setGamestate({
+  //       ...lastJsonMessage.data
+  //     })
+  //     youId = gamestate.you; 
+  //     opId = 1 - youId; 
+  //   }
+  // }, [lastJsonMessage])
   
   return (
     <div id = 'GameplayPage' className='Page full-span'>
@@ -188,23 +195,53 @@ function UsernamePage() {
 }
 
 function LandingPage() { 
-  const {roomcode, setRoomcode} = useContext(roomcodeContext)
-  const {formcontent, setFormcontent} = useState('')
+  const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
+    share: true, 
+    filter: true, 
+    // (jsonMsg) => { console.log(jsonMsg); return jsonMsg.id === ACTION.CREATE_ROOM}, // return true no matter what? 
+  }); 
 
-  const createRoom = useCallback(() => {
-    setRoomcode('1'); 
+  const {roomcode, setRoomcode} = useContext(roomcodeContext)
+  const [formcontent, setFormcontent] = useState('') // const {formcontent, setFormcontent} = useState('')  => bug vcl
+
+  useEffect(() => { 
+    console.log("Received message, " , lastJsonMessage); 
+    if(lastJsonMessage != null) { 
+      if(lastJsonMessage.responseType === RESPONSE_TYPE.ERROR) { 
+        alert(lastJsonMessage.data.error); 
+      }
+      else { 
+        setRoomcode(lastJsonMessage.data.roomCode); 
+        console.log(lastJsonMessage.data.roomCode)
+      }
+    }
+  }, [lastJsonMessage, readyState])
+
+  const callCreateRoom = useCallback(() => {
+    sendJsonMessage({
+      id: ACTION.CREATE_ROOM, 
+      action: ACTION.CREATE_ROOM, 
+      data: {}
+    })
   })
 
-  const enterRoom = useCallback((e) => { 
-    setRoomcode(roomcode); 
+  const callJoinRoom = useCallback((e) => { 
+    console.log("entering room: 09j9dp")
+    sendJsonMessage({ 
+        id: ACTION.JOIN_ROOM, 
+        action: ACTION.JOIN_ROOM,
+        data: {
+          roomCode: formcontent,
+        }
+    })
     e.preventDefault(); 
   })
 
   return (
     <div id = 'LandingPage' className='Page full-span flex-center-center'>
       <div className='flex-vertical-stretch'>
-        <button onClick={createRoom} className = 'form-button'>Create a new room</button>
-        <form onSubmit={enterRoom} className = 'flex-vertical-stretch'>
+        <button onClick={callCreateRoom} className = 'form-button'>Create a new room</button>
+        <form onSubmit={callJoinRoom} className = 'flex-vertical-stretch'>
           <input onChange={(e) => { setFormcontent(e.target.value)}} type="text" placeholder='Enter a room code' className='form-input'/>
           <button type="submit" className='form-button'>Enter an existing room</button>
         </form>
@@ -219,19 +256,22 @@ function App() {
   const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
     onOpen: () => {
       console.log('WebSocket connection established.');
-    }
+    }, 
+    share: true, 
+    filter: true, 
   }); // this connection is closed when the object is destructed? 
+
+  useEffect(() => 
+    console.log(lastJsonMessage), [lastJsonMessage])
 
   return ( // wrapping a state hook inside a context just to update? seems really stupid
     <div className='full-span'>
         <usernameContext.Provider value = {{username, setUsername}} >
           <roomcodeContext.Provider value = {{roomcode, setRoomcode}} >
-            <WSContext.Provider value = {{sendJsonMessage, lastJsonMessage, readyState}}>
-              {roomcode == '' && <LandingPage/>} 
-              {/* JSX code must be wrapped inside {} */}
-              {roomcode != '' && username == '' && <UsernamePage/>}
-              {roomcode != '' && username != '' && <GameplayPage/>}
-            </WSContext.Provider>
+            {roomcode === '' && <LandingPage/>} 
+            {/* JSX code must be wrapped inside {} */}
+            {roomcode !== '' && username === '' && <UsernamePage/>}
+            {roomcode !== '' && username !== '' && <GameplayPage/>}
           </roomcodeContext.Provider>
         </usernameContext.Provider>
       </div>

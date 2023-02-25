@@ -2,7 +2,7 @@
 const express = require("express");
 const path = require("path");
 
-const { WebSocketServer } = require('ws');
+const { WebSocketServer, WebSocket } = require('ws');
 const http = require('http');
 const { v4: uuidv4 } = require('uuid');
 const { RESPONSE_TYPE, ERROR, ACTION, MOVE_TYPE, SPELL } = require('./constants');
