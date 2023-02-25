@@ -23,18 +23,28 @@
     - ERROR = {
       error : string = error message, see constants.js/ERROR
     }
+  
+  - SET_AVATAR = {
+    avatar : int = id of new avatar to set
+  }
+  => Possible responses:
+    - OK
+    - ERROR
+
   - CREATE_ROOM = {}
   => Possible responses:
     - ROOM_CODE = {
       roomCode : string = 6-character room code of the newly created room
     }
     - ERROR
+
   - JOIN_ROOM = {
     roomCode : string = room code of the room to join
   }
   => Possible responses:
     - OK
     - ERROR
+
   - PLAY_MOVE = {
     moveType : string = one of constans.js/MOVE_TYPE indicating type of move to play
     cardIndex : int = index of spell card to play, if any
@@ -42,10 +52,13 @@
   => Possible responses:
     - OK
     - ERROR
+
   Possible server broadcasts:
+
   - GAME_LOG {
     log: string[] = list of game log lines, to be displayed to client
   }
+
   - GAME_STATE = {
       player : object[2] = {
         username : string = username of player

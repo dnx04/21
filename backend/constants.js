@@ -1,5 +1,6 @@
 export const ACTION = {
-    SET_USERNAME: 'setUserName',
+    SET_USERNAME: 'setUsername',
+    SET_AVATAR: 'setAvatar',
     CREATE_ROOM: 'createRoom',
     JOIN_ROOM: 'joinRoom',
     PLAY_MOVE: 'playAction'
@@ -23,7 +24,9 @@ export const MOVE_TYPE = {
 
 export const ERROR = {
     EMPTY_USERNAME: 'Username must not be empty',
+    INVALID_AVATAR: 'Invalid avatar ID',
     ALREADY_IN_ROOM: 'User is already in a room',
     ROOM_FULL: 'Room is full',
-    ROMM_NOT_EXIST: 'Room does not exist'
+    ROOM_NOT_EXIST: 'Room does not exist',
+    NOT_YOUR_TURN: 'It is not your turn'
 };
