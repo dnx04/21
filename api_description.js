@@ -73,9 +73,10 @@
         attack : int = how many health points the player will deduct from the opponent by winning this round
       }
 
-      turn : int = whose turn it currently is
+      turn : int = whose turn it currently is, 2 indicates end of round
+      winner : int = index of round winner (and game winner if game has ended), 2 indicates a tie, ignore if turn!=2
       you : int = index of player representing you, e.g. you=0 means player[0] corresponds to you
-      round : int = current round number
+      round : int = current round number, -99 indicates game end
       targetScore : int = target score for this round
     }
   * GAME_STATE is sent at game start once the second player joins, and after each valid move.

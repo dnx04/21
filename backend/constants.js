@@ -34,7 +34,9 @@ const ERROR = {
     ROOM_NOT_EXIST: 'Room does not exist',
     NOT_YOUR_TURN: 'It is not your turn',
     TABLE_FULL: 'Table is full. You can only draw a maximum of 5 cards per round',
-    INVALID_INDEX: 'Invalid card index'
+    INVALID_INDEX: 'Invalid card index',
+    UNKNOWN_MOVE_TYPE: 'Unknown move type',
+    INVALID_TIME: 'You cannot use the Continue move right now'
 };
 
 module.exports = {
@@ -45,4 +47,8 @@ module.exports = {
     AVATAR_CNT: 5,
     SPELL_PER_ROUND: 3,
     MAX_SPELL_IN_HAND: 7,
+    MAX_CARD_ON_TABLE: 5,
+    ROUND_END: 2,
+    TIE: 2,
+    GAME_END: -99,
 }
