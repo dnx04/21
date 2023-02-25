@@ -13,39 +13,106 @@ const usernameContext = createContext({}) // primitive type
 const roomcodeContext = createContext({})
 const WSContext = createContext({}) // not primitive
 
-function RulesSec() { 
-
+function Deck(props) { 
+  return (
+    <div id = "Deck"  className='card'>
+      Cards left: {props.numLeft}
+    </div>
+  )
 }
 
-function Avatar(props) { 
+function TargetScore(props) { 
+  return (
+    <div id = 'TargetScore'>
+        target score: {props.targetScore}
+    </div>
+  )
+}
 
+function Hand(props) { 
+  let cards = props.cardIds
+  while cards.length
+  console.log(props.cardIds)
+  return (
+    <div id = "Hand">
+      {
+        props.cardIds.map((cardId) => <Card cardName={cardId}/>)
+        // props.cardIds.map((cardId) => {<div>dlkdkljkkkk</div>} ) does not work. Why??????????
+      }
+    </div>
+  )
+}
+
+function EndTurn(props) { 
+  return (
+    <div id = "EndTurn">
+
+    </div>
+  )
+}
+
+function Options(props) { 
+  return (
+    <div id='Options' className = 'flex-vertical-stretch'>
+        <Deck numLeft = {11 - props.turn}/>
+        <TargetScore targetScore = {props.targetScore}/>
+        <Hand cardIds = {props.player[props.you].spellCards}/>
+        <EndTurn/>
+    </div>
+  )
+}
+
+
+function Avatar(props) { 
+  return <div>
+    Avatear
+  </div>
 }
 
 function HealthBar(props) { 
-}
-
-function NumberCard(props) { 
-   
-}
-
-function SpellCard(props) { 
-}
-
-
-function Deck(props) { 
   return (
-    <div className='Deck'>
-      Trumpcards
+    <div className="health-bar">
+      dlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkj
+    </div>
+  )
+}
+
+function Card(props) { 
+  return (
+    <div className='card'>
+      Card: {props.cardName}
+    </div>
+  )
+}
+
+function CardTable(props) { 
+  const cards = props.cardIds.map(cardId => <Card cardName = {cardId}/>)
+  return (
+    <div  className="card-table">
+        {cards}
     </div>
   )
 }
 
 function Player(props) { 
-  return (
-    <div className='Player'>
-      {"" + props}
-    </div>
-  )
+  if(props.isYou) {
+    return (
+      <div className='flex-vertical-center'>
+        <CardTable cardIds = {props.spellTable} className="card-table"/>
+        <CardTable cardIds = {props.onTable} className="card-table"/>
+        <HealthBar avatar = {props.avatar} health = {props.health} className="health-bar"/>
+      </div>
+    )
+  }
+  else { 
+    return (
+      <div className='flex-vertical-center'>
+        <HealthBar avatar = {props.avatar} health = {props.health} className="health-bar"/>
+        <CardTable cardIds = {props.onTable} className="card-table"/>
+        <CardTable cardIds = {props.spellTable} className="card-table"/>
+      </div>
+    )
+  }
 }
 
 function GameplayPage() { 
@@ -92,10 +159,10 @@ function GameplayPage() {
   
   return (
     <div id = 'GameplayPage' className='Page full-span'>
-      <Deck />
-      <div class = "full-span vertical-grid-2">
-        <Player {...gamestate.player[youId]} isWinner = {youId === gamestate.winner} thisTurn = {youId === gamestate.turn} isYou = {true}/>
+      <Options {...gamestate} />
+      <div className = "full-span vertical-grid-2">
         <Player {...gamestate.player[opId]} isWinner = {opId === gamestate.winner} thisTurn = {opId === gamestate.turn} isYou = {false}/>
+        <Player {...gamestate.player[youId]} isWinner = {youId === gamestate.winner} thisTurn = {youId === gamestate.turn} isYou = {true}/>
       </div>
     </div>
   )
