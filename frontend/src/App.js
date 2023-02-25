@@ -33,16 +33,17 @@ function SpellCard(props) {
 
 
 function Deck(props) { 
-  return 
+  return (
     <div className='Deck'>
       Trumpcards
     </div>
+  )
 }
 
 function Player(props) { 
   return (
     <div className='Player'>
-      {props}
+      {"" + props}
     </div>
   )
 }
@@ -80,18 +81,22 @@ function GameplayPage() {
   let youId = 0, opId = 1; 
 
   useEffect(() => {
-    setGamestate({
-      ...lastJsonMessage.data
-    })
-    youId = gamestate.you; 
-    opId = 1 - youId; 
+    if(lastJsonMessage != null) { 
+      setGamestate({
+        ...lastJsonMessage.data
+      })
+      youId = gamestate.you; 
+      opId = 1 - youId; 
+    }
   }, [lastJsonMessage])
   
   return (
-    <div className='GameplayPage Page'>
-      <Deck/>
-      <Player {...gamestate.player[youId]} isWinner = {youId === gamestate.winner} thisTurn = {youId === gamestate.turn} isYou = {true}/>
-      <Player {...gamestate.player[opId]} isWinner = {opId === gamestate.winner} thisTurn = {opId === gamestate.turn} isYou = {false}/>
+    <div id = 'GameplayPage' className='Page full-span'>
+      <Deck />
+      <div class = "full-span vertical-grid-2">
+        <Player {...gamestate.player[youId]} isWinner = {youId === gamestate.winner} thisTurn = {youId === gamestate.turn} isYou = {true}/>
+        <Player {...gamestate.player[opId]} isWinner = {opId === gamestate.winner} thisTurn = {opId === gamestate.turn} isYou = {false}/>
+      </div>
     </div>
   )
 }
@@ -106,10 +111,10 @@ function UsernamePage() {
   })
 
   return (
-    <div className='UsernamePage Page'>
-      <form onSubmit={_setUsername}>
-        <input onChange={(e) => { setFormcontent(e.target.value)}} type="text" placeholder='Enter your name'/>
-        <button type="submit">Let's go!</button>
+    <div id = 'UsernamePage' className='Page full-span flex-center-center'>
+      <form onSubmit={_setUsername} className = 'flex-vertical-stretch'>
+        <input onChange={(e) => { setFormcontent(e.target.value)}} type="text" placeholder='Enter your name' className='form-input'/>
+        <button type="submit" className='form-button'>Let's go!</button>
       </form>
     </div>
   )
@@ -129,12 +134,14 @@ function LandingPage() {
   })
 
   return (
-    <div className='LandingPage Page'>
-      <button onClick={createRoom}>Create a new room</button>
-      <form onSubmit={enterRoom}>
-        <input onChange={(e) => { setFormcontent(e.target.value)}} type="text" placeholder='Enter a room code'/>
-        <button type="submit">Enter an existing room</button>
-      </form>
+    <div id = 'LandingPage' className='Page full-span flex-center-center'>
+      <div className='flex-vertical-stretch'>
+        <button onClick={createRoom} className = 'form-button'>Create a new room</button>
+        <form onSubmit={enterRoom} className = 'flex-vertical-stretch'>
+          <input onChange={(e) => { setFormcontent(e.target.value)}} type="text" placeholder='Enter a room code' className='form-input'/>
+          <button type="submit" className='form-button'>Enter an existing room</button>
+        </form>
+      </div>
     </div>
   )
 }
@@ -149,16 +156,18 @@ function App() {
   }); // this connection is closed when the object is destructed? 
 
   return ( // wrapping a state hook inside a context just to update? seems really stupid
-      <usernameContext.Provider value = {{username, setUsername}} >
-        <roomcodeContext.Provider value = {{roomcode, setRoomcode}} >
-          <WSContext.Provider value = {{sendJsonMessage, lastJsonMessage, readyState}}>
-            {roomcode == '' && <LandingPage/>} 
-            {/* JSX code must be wrapped inside {} */}
-            {roomcode != '' && username == '' && <UsernamePage/>}
-            {roomcode != '' && username != '' && <GameplayPage/>}
-          </WSContext.Provider>
-        </roomcodeContext.Provider>
-      </usernameContext.Provider>
+    <div className='full-span'>
+        <usernameContext.Provider value = {{username, setUsername}} >
+          <roomcodeContext.Provider value = {{roomcode, setRoomcode}} >
+            <WSContext.Provider value = {{sendJsonMessage, lastJsonMessage, readyState}}>
+              {roomcode == '' && <LandingPage/>} 
+              {/* JSX code must be wrapped inside {} */}
+              {roomcode != '' && username == '' && <UsernamePage/>}
+              {roomcode != '' && username != '' && <GameplayPage/>}
+            </WSContext.Provider>
+          </roomcodeContext.Provider>
+        </usernameContext.Provider>
+      </div>
   );
 }
 
