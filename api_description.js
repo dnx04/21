@@ -68,9 +68,10 @@
         avatar : int = number indicating avatar of player
         onTable : int[] = cards on table for that player
           ontable[0] is the face-down card and is replaced with -1 for the opponent
-        spellTable : string[] = spell cards played this round for that player, as well as those that are active this round; see constants.js/SPELL.
+        spellTable : string[] = spell cards played this round for that player, as well as those that are active this round; 
+          see constants.js/SPELL.
         spellCards : string[] = spell cards in hand for that player; see constants.js/SPELL.
-          For the opponent, this arrray is empty
+          For the opponent, all elements of this array are replaced with -1 
 
         health : int = how many health points the player currently has
         attack : int = how many health points the player will deduct from the opponent by winning this round
