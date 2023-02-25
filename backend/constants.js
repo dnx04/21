@@ -18,13 +18,14 @@ const MOVE_TYPE = {
     DRAW: 'draw',
     PLAY_SPELL: 'playSpell',
     END_TURN: 'endTurn',
-    CONTINUE: 'continue' // Used e.g. after round end to indicate that 
-                         // player is ready to start new round
+    CONTINUE: 'continue' // Used e.g. after round/game end to indicate that 
+                         // player is ready to start new round/game. 
+                         // Once both player sends this move new round/game will start
 };
 
 const SPELL = {
-    ONE_UP: "One-Up",  // Increases attack by 1, draw 1 spell (4)
-    TWO_UP: "Two-Up",  // Increases attack by 2, return opponent's last drawn card (2)
+    ONE_UP: "One-Up",  // Increases attack by 1 until removed, draw 1 spell (4)
+    TWO_UP: "Two-Up",  // Increases attack by 2 until removed, return opponent's last drawn card (2)
     DRAW_3: "Draw 3",  // Draw the 3 card (2)
     DRAW_4: "Draw 4",  // Draw the 4 card (2)
     DRAW_5: "Draw 5",  // Draw the 5 card (2)
@@ -34,15 +35,19 @@ const SPELL = {
     RETURN: "Return",  // Return player's last drawn card (4)
     SWAP: "Swap", // Swap the players' last drawn face-up card (3)
     TRADE: "Trade", // Trade 2 other spells at random for 3 from the deck, cannot be used if under 3 (3)
-    GREED: "Greed", // Increase attack by (number of opponent spells in hand)/2 rounded up (2)
-    BANISH: "Banish", // Remove all opponent spells currently on the table (3)
-    CHANGE_17: "Change-Up 17", // Change target score to 17 (3)
-    CHANGE_21: "Change-Up 21", // Change target score to 21 (2)
-    CHANGE_24: "Change-Up 24", // Change target score to 24 (3)
-    CHANGE_27: "Change-Up 27", // Change target score to 27 (3)
+    GREED: "Greed", // Increase attack by (number of opponent spells in hand)/2 rounded up until removed (2)
+                    // This increase *does not* change if the opponent adds or removes spells, because otherwise
+                    // coding would be a pain in the butt
+    BANISH: "Banish", // Remove all opponent spells currently on the table (4)
+    CHANGE_17: "Change-Up 17", // Change target score to 17 until removed (3)
+    CHANGE_21: "Change-Up 21", // Change target score to 21 until removed (2)
+    CHANGE_24: "Change-Up 24", // Change target score to 24 until removed (3)
+    CHANGE_27: "Change-Up 27", // Change target score to 27 until removed (3)
     PERFECT_DRAW: "Perfect Draw", // Draw the best possible card from the deck (3)
     SCRAP: "Scrap", // Cancels current round without a winner (4)
-    PERFECT_EXECUTION: "Perfect Execution", // Deals 10 damage at the end of a round if you have exactly the target score (2)
+    PERFECT_EXECUTION: "Perfect Execution", // Deals 10 damage at the end of a round if you have exactly the 
+                                            // target score (until removed) (2)
+        // Note: If both players activate PE in the same turn, they cancel each other out
 }
 
 const ERROR = {
@@ -71,4 +76,5 @@ module.exports = {
     ROUND_END: 2,
     TIE: 2,
     GAME_END: -99,
+    START_HEALTH: 10,
 }
