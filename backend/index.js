@@ -110,9 +110,9 @@ function broadcastGameState(roomCode) {
     let playerPublic = {
       username: userInfo[room.player[p].user].username,
       avatar: userInfo[room.player[p].user].avatar,
-      onTable: room.player[p].onTable,
-      spellCards: room.player[p].spellCards,
-      spellTable: room.player[p].spellTable,
+      onTable: clone(room.player[p].onTable),
+      spellCards: clone(room.player[p].spellCards),
+      spellTable: clone(room.player[p].spellTable),
       health: room.player[p].health,
       attack: room.player[p].attack,
     }
@@ -124,11 +124,14 @@ function broadcastGameState(roomCode) {
     if (room.turn !== ROUND_END) {
       response.data.player[1-p].onTable[0] = -1;
     }
-    response.data.player[1-p].spellCards = [];
+    for (u in response.data.player[1-p].spellCards) 
+      response.data.player[1-p].spellCards[u] = -1;
 
     sendJson(response, room.player[p].user);
 
-    response.data.player[1-p].spellCards = room.player[1-p].spellCards;
+    for (u in response.data.player[1-p].spellCards) 
+      response.data.player[1-p].spellCards[u] = room.player[1-p].spellCards[u];
+      
     response.data.player[1-p].onTable[0] = room.player[1-p].onTable[0];
   }
 }
@@ -142,7 +145,7 @@ function broadcastGameLog(roomCode, log) {
     }
   };
 
-  for (let p in response.player) sendJson(response, p.user);
+  for (let p of response.player) sendJson(response, p.user);
 }
 
 /* --- GAME CONTROL --- */
@@ -166,7 +169,7 @@ function startRound(roomCode) {
     room.player[p].onTable.push(room.player[p].onDeck.shift());
 
     let newSpellTable = []
-    for (let g in room.player[p].spellTable) if (lasting[g]) {
+    for (let g of room.player[p].spellTable) if (lasting[g]) {
       newSpellTable.push(g);
     } 
     room.player[p].spellTable = newSpellTable;
@@ -197,9 +200,9 @@ function endRound(roomCode) {
   const target = room.targetScore;
   room.turn = ROUND_END;
   let sum0 = 0;
-  for (let g in room.player[0].onTable) sum0+=g;
+  for (let g of room.player[0].onTable) sum0+=g;
   let sum1 = 0;
-  for (let g in room.player[1].onTable) sum1+=g;
+  for (let g of room.player[1].onTable) sum1+=g;
   if (sum0<=target && sum1>target) {
     room.winner = 0;
   }
@@ -298,7 +301,7 @@ function endTurn(roomCode) {
 function Continue(roomCode, userId) {
   let room = roomInfo[roomCode];
   if (room.turn === ROUND_END && room.round !== GAME_END) {
-    for (let p in room.player) if (p.user === userId) p.ready = 1;
+    for (let p of room.player) if (p.user === userId) p.ready = 1;
     if (room.player[0].ready === 1 && room.player[1].ready === 1) {
       startRound(roomCode);
       broadcastGameState(roomCode);
