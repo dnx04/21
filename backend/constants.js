@@ -18,3 +18,8 @@ export const MOVE_TYPE = {
     PLAY_SPELL: 'playSpell',
     END_TURN: 'endTurn'
 }
+
+export const ERROR = {
+    EMPTY_USERNAME: 'Username must not be empty',
+    ALREADY_IN_ROOM: 'User is already in a room'
+}

@@ -36,16 +36,17 @@
         username : string = username of player
         onTable : int[] = cards on table for that player.
           ontable[0] is the face-down card and is replaced with -1 for the opponent
-        spellCards : string[] = spell cards in hand for that player.
+        spellCards : string[] = spell cards in hand for that player; see constants.js/SPELL.
           For the opponent, this arrray is empty
 
-        points : int = how many (match) points the player currently has
-        winAmount : int = how many points the player will gain by winning this round
+        health : int = how many health points the player currently has
+        attack : int = how many health points the player will deduct from the opponent by winning this round
       }
 
       turn : int = whose turn it currently is
       you : int = index of player representing you, e.g. you=0 means player[0] corresponds to you
       round : int = current round number
+      targetScore : int = target score for this round
     }
     - ERROR
     * GAME_STATE is sent to both players in the room if join is successful, to indicate game start.
