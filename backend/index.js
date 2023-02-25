@@ -6,7 +6,7 @@ const { WebSocketServer, WebSocket } = require('ws');
 const http = require('http');
 const { v4: uuidv4 } = require('uuid');
 const { RESPONSE_TYPE, ERROR, ACTION, MOVE_TYPE, SPELL } = require('./constants');
-const { AVATAR_CNT, SPELL_PER_TURN, MAX_SPELL_IN_HAND, MAX_CARD_ON_TABLE, TIE, GAME_END, ROUND_END, START_HEALTH } = require('./constants');
+const { AVATAR_CNT, SPELL_PER_ROUND, MAX_SPELL_IN_HAND, MAX_CARD_ON_TABLE, TIE, GAME_END, ROUND_END, START_HEALTH } = require('./constants');
 const { qty, lasting, effect } = require('./spellEffect')
 const { response } = require("express");
 const { start } = require("repl");
@@ -115,13 +115,13 @@ function broadcastGameState(roomCode) {
     let playerPublic = {
       username: userInfo[room.player[p].user].username,
       avatar: userInfo[room.player[p].user].avatar,
-      onTable: clone(room.player[p].onTable),
-      spellCards: clone(room.player[p].spellCards),
-      spellTable: clone(room.player[p].spellTable),
+      onTable: JSON.parse(JSON.stringify(room.player[p].onTable)),
+      spellCards: JSON.parse(JSON.stringify(room.player[p].spellCards)),
+      spellTable: JSON.parse(JSON.stringify(room.player[p].spellTable)),
       health: room.player[p].health,
       attack: room.player[p].attack,
     }
-    response.data.push(playerPublic);
+    response.data.player.push(playerPublic);
   }
   for (let p=0; p<2; p++) {
     response.data.you = p
@@ -184,7 +184,7 @@ function startRound(roomCode) {
       room.player[p].spellCards.push(room.spellCardDeck.shift());
     }
 
-    recalculateAtkAndTarget();
+    recalculateAtkAndTarget(room);
   }
 }
 
@@ -432,7 +432,7 @@ actionHandlers[ACTION.SET_USERNAME]=setUsername;
 
 /* --- SET_AVATAR --- */
 
-function setUsername(userId, data) {
+function setAvatar(userId, data) {
   const avatar = data.avatar;
   let response = {}
 
@@ -453,7 +453,7 @@ function setUsername(userId, data) {
   }
   return response;
 }
-actionHandlers[ACTION.SET_USERNAME]=setUsername;
+actionHandlers[ACTION.SET_AVATAR]=setAvatar;
 
 /* --- CREATE_ROOM --- */
 
@@ -497,8 +497,10 @@ actionHandlers[ACTION.CREATE_ROOM]=createRoom;
 /* --- JOIN_ROOM --- */
 
 function joinRoom(userId, data) {
+  console.log('ok good we at joinRoom');
   let response = {}
   if (userInfo[userId].room === '') {
+    console.log('ok good not already in another room');
     let roomCode = data.roomCode;
     if (roomInfo[roomCode] === undefined) {
       response = {
@@ -517,13 +519,20 @@ function joinRoom(userId, data) {
       };
     }
     else {
+      
+      console.log('ok good room exists and is not full');
       addPlayerToRoom(roomCode, userId);
+      
+      console.log('added player');
       userInfo[userId].room = roomCode;
       startGame(roomCode);
+      console.log('started game, now broadcast dat state pls');
+      broadcastGameState(roomCode);
       response = {
         response: RESPONSE_TYPE.OK,
         data: {}
       }
+
     }
   }
   else {
@@ -591,7 +600,8 @@ function handleMessage(message, userId) {
   console.log(userInfo[userId].username);
   console.log("-------------------------------------------------------------------");
 
-  let response = actionHandlers[json.action](userId, json.data);
+  let handler = actionHandlers[json.action]
+  let response = handler(userId, json.data);
   response.id = json.id;
   sendJson(response, userId);
 }

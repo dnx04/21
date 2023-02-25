@@ -13,14 +13,40 @@ const WS_URL = 'ws://localhost:3080';
 
 // broadcasted to all descendants: ROOM, USERNAME, WebSocket
 
-const usernameContext = createContext({}) // primitive type
 const roomcodeContext = createContext({})
 
 function Deck(props) { 
+  const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
+    share: true, 
+    filter: true, 
+  }); 
+
+  useEffect(() => { 
+    console.log("Received message, " , lastJsonMessage); 
+    if(lastJsonMessage != null) { 
+      if(lastJsonMessage.responseType === RESPONSE_TYPE.ERROR) { 
+        alert(lastJsonMessage.data.error); 
+      }
+      else if(lastJsonMessage.id == MOVE_TYPE.DRAW) { 
+        
+      }
+    }
+  }, [lastJsonMessage, readyState])
+
+  const callDraw= useCallback(() => {
+    sendJsonMessage({
+      id: MOVE_TYPE.DRAW, 
+      action: ACTION.PLAY_MOVE, 
+      data: { 
+        moveType: MOVE_TYPE.DRAW, 
+      }
+    })
+  })
+
   return (
-    <div id = "Deck"  className='card'>
+    <button onClick = {callDraw} id = "Deck"  className='card'>
       Cards left: {props.numLeft}
-    </div>
+    </button>
   )
 }
 
@@ -33,6 +59,11 @@ function TargetScore(props) {
 }
 
 function Hand(props) { 
+  const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
+    share: true, 
+    filter: true, 
+  }); 
+
   let cards = []
   for(let i = 0; i < 16; i += 1) { 
     if(i >= props.cardIds.length) { 
@@ -40,24 +71,110 @@ function Hand(props) {
     }
     else cards.push(props.cardIds[i]); 
   }
+
+  useEffect(() => { 
+    console.log("Received message, " , lastJsonMessage); 
+    if(lastJsonMessage != null) { 
+      if(lastJsonMessage.responseType === RESPONSE_TYPE.ERROR) { 
+        alert(lastJsonMessage.data.error); 
+      }
+      else if(lastJsonMessage.id == MOVE_TYPE.PLAY_SPELL) { 
+        
+      }
+    }
+  }, [lastJsonMessage, readyState])
+
+  const callPlaySpell = useCallback((cardName) => {
+    sendJsonMessage({
+      id: MOVE_TYPE.PLAY_SPELL, 
+      action: ACTION.PLAY_MOVE, 
+      data: { 
+        moveType: MOVE_TYPE.PLAY_SPELL, 
+        cardIndex: cardName, 
+      }
+    })
+  })
+
   console.log(cards)
   return (
     <div id = "Hand">
       {
-        cards.map((cardId) => <Card cardName={cardId}/>)
-        // props.cardIds.map((cardId) => {<div>dlkdkljkkkk</div>} ) does not work. Why??????????
+        cards.map((cardId) => <button onClick = {() => callPlaySpell(cardId)} className='card'>{cardId}</button>)
       }
     </div>
   )
 }
 
 function EndTurn(props) { 
+  const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
+    share: true, 
+    filter: true, 
+  }); 
+
+  useEffect(() => { 
+    console.log("Received message, " , lastJsonMessage); 
+    if(lastJsonMessage != null) { 
+      if(lastJsonMessage.responseType === RESPONSE_TYPE.ERROR) { 
+        alert(lastJsonMessage.data.error); 
+      }
+      else if(lastJsonMessage.id == MOVE_TYPE.END_TURN) { 
+        
+      }
+    }
+  }, [lastJsonMessage, readyState])
+
+  const callEndTurn = useCallback(() => {
+    sendJsonMessage({
+      id: MOVE_TYPE.END_TURN, 
+      action: ACTION.PLAY_MOVE, 
+      data: { 
+        moveType: MOVE_TYPE.END_TURN, 
+      }
+    })
+  })
+
   return (
-    <div id = "EndTurn">
+    <button onClick = {callEndTurn} id = "EndTurn">
       End Turn
-    </div>
+    </button>
   )
 }
+
+function Continue(props) { 
+  const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
+    share: true, 
+    filter: true, 
+  }); 
+
+  useEffect(() => { 
+    console.log("Received message, " , lastJsonMessage); 
+    if(lastJsonMessage != null) { 
+      if(lastJsonMessage.responseType === RESPONSE_TYPE.ERROR) { 
+        alert(lastJsonMessage.data.error); 
+      }
+      else if(lastJsonMessage.id == MOVE_TYPE.CONTINUE) { 
+        
+      }
+    }
+  }, [lastJsonMessage, readyState])
+
+  const callContinue = useCallback(() => {
+    sendJsonMessage({
+      id: MOVE_TYPE.CONTINUE, 
+      action: ACTION.PLAY_MOVE, 
+      data: { 
+        moveType: MOVE_TYPE.CONTINUE, 
+      }
+    })
+  })
+
+  return (
+    <button onClick = {callContinue} id = "EndTurn">
+      New game
+    </button>
+  )
+}
+
 
 function Options(props) { 
   return (
@@ -80,7 +197,7 @@ function Avatar(props) {
 function HealthBar(props) { 
   return (
     <div className="health-bar">
-      dlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkjdlfjlsdkjgtsldkgjkj
+      Health bar
     </div>
   )
 }
@@ -175,19 +292,62 @@ function GameplayPage() {
   )
 }
 
-function UsernamePage() { 
-  const {username, setUsername} = useContext(usernameContext)
-  const [formcontent, setFormcontent] = useState('')
+function UsernamePage(props) { 
+  const username = props.username, 
+    setUsername = props.setUsername, 
+    avatar = props.avatar, 
+    setAvatar = props.setAvatar; 
 
-  const _setUsername = useCallback((e) => { 
-    setUsername('good'); 
-    e.preventDefault(); 
+  const [formUsername, setFormUsername] = useState('')
+  const [formAvatar, setFormAvatar] = useState(null)
+
+  const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
+    share: true, 
+    filter: true, 
+  }); 
+
+  useEffect(() => { 
+    console.log("Received message, " , lastJsonMessage); 
+    if(lastJsonMessage != null) { 
+      if(lastJsonMessage.responseType === RESPONSE_TYPE.ERROR) { 
+        alert(lastJsonMessage.data.error); 
+      }
+      else if(lastJsonMessage.id == ACTION.SET_USERNAME) { 
+        setUsername(formUsername); 
+      }
+      else if(lastJsonMessage.id == ACTION.SET_AVATAR){ 
+        setAvatar(formAvatar); 
+      }
+      else { 
+        console.log("????")
+      }
+    }
+  }, [lastJsonMessage, readyState])
+
+  const callSendInfo = useCallback(() => {
+    sendJsonMessage({
+      id: ACTION.SET_USERNAME, 
+      action: ACTION.SET_USERNAME, 
+      data: {
+        username: formUsername, 
+      }
+    })
+    let avatarrr = Math.floor((Math.random() * 4))
+    sendJsonMessage({
+      id: ACTION.SET_AVATAR, 
+      action: ACTION.SET_AVATAR, 
+      data: {
+        avatar: avatarrr
+      }
+    })
+    console.log(avatarrr)
   })
 
   return (
     <div id = 'UsernamePage' className='Page full-span flex-center-center'>
-      <form onSubmit={_setUsername} className = 'flex-vertical-stretch'>
-        <input onChange={(e) => { setFormcontent(e.target.value)}} type="text" placeholder='Enter your name' className='form-input'/>
+      <form onSubmit={callSendInfo} className = 'flex-vertical-stretch'>
+        <input onChange={(e) => { setFormUsername(e.target.value)}} type="text" placeholder='Enter your name' className='form-input'/>
+        {/* <input onChange={(e) => { setFormAvatar(e.target.value)}} type="text" placeholder='Enter your name' className='form-input'/> */}
         <button type="submit" className='form-button'>Let's go!</button>
       </form>
     </div>
@@ -253,6 +413,7 @@ function LandingPage() {
 function App() { 
   const [username, setUsername] = useState('')
   const [roomcode, setRoomcode] = useState('')
+  const [avatar, setAvatar] = useState(null)
   const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
     onOpen: () => {
       console.log('WebSocket connection established.');
@@ -266,14 +427,12 @@ function App() {
 
   return ( // wrapping a state hook inside a context just to update? seems really stupid
     <div className='full-span'>
-        <usernameContext.Provider value = {{username, setUsername}} >
-          <roomcodeContext.Provider value = {{roomcode, setRoomcode}} >
-            {roomcode === '' && <LandingPage/>} 
-            {/* JSX code must be wrapped inside {} */}
-            {roomcode !== '' && username === '' && <UsernamePage/>}
-            {roomcode !== '' && username !== '' && <GameplayPage/>}
-          </roomcodeContext.Provider>
-        </usernameContext.Provider>
+        <roomcodeContext.Provider value = {{roomcode, setRoomcode}} >
+          {roomcode === '' && <LandingPage/>} 
+          {/* JSX code must be wrapped inside {} */}
+          {roomcode !== '' && username === '' && <UsernamePage {...{username, setUsername, roomcode, setRoomcode}}/>}
+          {roomcode !== '' && username !== '' && <GameplayPage/>}
+        </roomcodeContext.Provider>
       </div>
   );
 }
