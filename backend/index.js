@@ -5,9 +5,11 @@ const path = require("path");
 const { WebSocketServer } = require('ws');
 const http = require('http');
 const { v4: uuidv4 } = require('uuid');
-const { RESPONSE_TYPE, ERROR, ACTION, MOVE_TYPE, AVATAR_CNT, SPELL_PER_TURN, MAX_SPELL_IN_HAND, MAX_CARD_ON_TABLE, TIE, GAME_END, ROUND_END } = require('./constants');
-const { lasting, effect } = require('./spellEffect')
+const { RESPONSE_TYPE, ERROR, ACTION, MOVE_TYPE, SPELL } = require('./constants');
+const { AVATAR_CNT, SPELL_PER_TURN, MAX_SPELL_IN_HAND, MAX_CARD_ON_TABLE, TIE, GAME_END, ROUND_END, START_HEALTH } = require('./constants');
+const { qty, lasting, effect } = require('./spellEffect')
 const { response } = require("express");
+const { start } = require("repl");
 
 /* WEBSOCKET */
 
@@ -27,14 +29,7 @@ let userInfo = {};
 let roomInfo = {};
 
 /* Randomize array in-place using Durstenfeld shuffle algorithm */
-function shuffleArray(array) {
-  for (var i = array.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var temp = array[i];
-      array[i] = array[j];
-      array[j] = temp;
-  }
-}
+
 
 
 function sendJson(json, userId) {
@@ -81,7 +76,7 @@ function addPlayerToRoom(roomCode, userId) {
     onDeck: [],
     spellCards: [],
     spellTable: [],
-    health: 10,
+    health: START_HEALTH,
     attack: 1,
     
     ready: 0,
@@ -131,7 +126,7 @@ function broadcastGameState(roomCode) {
 
     for (u in response.data.player[1-p].spellCards) 
       response.data.player[1-p].spellCards[u] = room.player[1-p].spellCards[u];
-      
+
     response.data.player[1-p].onTable[0] = room.player[1-p].onTable[0];
   }
 }
@@ -169,7 +164,7 @@ function startRound(roomCode) {
     room.player[p].onTable.push(room.player[p].onDeck.shift());
 
     let newSpellTable = []
-    for (let g of room.player[p].spellTable) if (lasting[g]) {
+    for (let g of room.player[p].spellTable) if (lasting[g] === 1) {
       newSpellTable.push(g);
     } 
     room.player[p].spellTable = newSpellTable;
@@ -179,19 +174,87 @@ function startRound(roomCode) {
       room.player[p].spellCards.push(room.spellCardDeck.shift());
     }
 
-    // TODO: Draw spell cards for players
+    recalculateAtkAndTarget();
+  }
+}
+
+
+/*
+function initRoom(roomCode) {
+  roomInfo[roomCode] = {
+    player: [],
+    spellCardDeck: [],
+    turn: 0,
+    round: 0,
+    winner: 0,
+    targetScore: 21,
+    consecutiveEnd: 0
+  };
+}
+
+function addPlayerToRoom(roomCode, userId) {
+  let room = roomInfo[roomCode];
+  const playerStruct = {
+    user: userId,
+    onTable: [],
+    onDeck: [],
+    spellCards: [],
+    spellTable: [],
+    health: START_HEALTH,
+    attack: 1,
+    
+    ready: 0,
+  };
+  room.player.push(playerStruct);
+}
+*/
+
+
+function recalculateAtkAndTarget(game) {
+  game.targetScore = 21;
+  for (p in game.player) game.player[p].attack = 1;
+  for (p in game.player) {
+    for (g in game.player[p].spellTable) {
+      if (g === SPELL.CHANGE_17) game.targetScore = 17;
+      if (g === SPELL.CHANGE_21) game.targetScore = 21;
+      if (g === SPELL.CHANGE_24) game.targetScore = 24;
+      if (g === SPELL.CHANGE_27) game.targetScore = 27;
+
+      if (g === SPELL.ONE_UP) game.player[p].attack += 1;
+      if (g === SPELL.TWO_UP) game.player[p].attack += 2;
+      if (g === SPELL.GREED) game.player[p].attack += Math.ceil(game.player[1-p].spellCards.length / 2);
+    } 
   }
 }
 
 function startGame(roomCode) {
   let room = roomInfo[roomCode];
-  const p0name = userInfo[room.player[0].user].username;
-  const p1name = userInfo[room.player[1].user].username;
-  // TODO: Add spell cards
+
+  room.spellCardDeck = [];
+  for (let i=0; i<6; i++) {
+    for (let g in qty) {
+      for (let j=0; j<qty[g]; j++)
+      room.spellCardDeck.push(g);
+    }
+  }
+  
+  room.turn = 0;
+  room.round = 0;
+  room.winner = 0;
+  room.targetScore = 21;
+  room.consecutiveEnd = 0;
+
+  for (p of room.player) {
+    p.onTable = [];
+    p.onDeck = [];
+    p.spellCards = [];
+    p.spellTable = [];
+    p.health = START_HEALTH;
+    p.attack = 1;
+  }
   shuffleArray(room.spellCardDeck);
   
   startRound(roomCode);
-  broadcastGameState(roomCode);
 }
 
 
@@ -244,6 +307,7 @@ function draw(roomCode) {
   else {    
     room.consecutiveEnd = 0;
     room.player[t].onTable.push(room.player[t].onDeck.shift());
+    room.turn = 1 - room.turn;
     let ok = {
       responseType: RESPONSE_TYPE.OK,
       data: {}
@@ -252,6 +316,7 @@ function draw(roomCode) {
     return ok;
   }
 }
+
 
 function playSpell(roomCode, cardIndex) {
   let room = roomInfo[roomCode];
@@ -263,12 +328,14 @@ function playSpell(roomCode, cardIndex) {
     room.player[t].spellTable.push(cardPlayed);
 
     effect[cardPlayed](room);
+    recalculateAtkAndTarget(room);
 
     let ok = {
       responseType: RESPONSE_TYPE.OK,
       data: {}
     };
     broadcastGameState(roomCode);
+    if (lasting[cardPlayed] !== 1) room.player[t].spellTable.pop();
     return ok;
   }
   else {
@@ -303,7 +370,13 @@ function Continue(roomCode, userId) {
   if (room.turn === ROUND_END && room.round !== GAME_END) {
     for (let p of room.player) if (p.user === userId) p.ready = 1;
     if (room.player[0].ready === 1 && room.player[1].ready === 1) {
-      startRound(roomCode);
+
+      if (room.round === GAME_END) {
+        startGame(roomCode);
+      }
+      else {
+        startRound(roomCode);
+      }
       broadcastGameState(roomCode);
     }
     return {
@@ -463,7 +536,7 @@ function playMove(userId, data) {
   let response = {};
   const room = roomInfo[userInfo[userId].room];
   if ((data.moveType !== MOVE_TYPE.CONTINUE) && (room.turn === ROUND_END || room.player[room.turn].user !== userId)) {
-    response = {
+    return {
       responseType: RESPONSE_TYPE.ERROR,
       data: {
         error: ERROR.NOT_YOUR_TURN

@@ -37,8 +37,6 @@ const SPELL = {
     TRADE: "Trade", // Trade 2 other spells in hand at random for 3 from the deck, 
                     // cannot be used if you dont have 2 other spells (3)
     GREED: "Greed", // Increase attack by (number of opponent spells in hand)/2 rounded up until removed (2)
-                    // This increase *does not* change if the opponent adds or removes spells, because otherwise
-                    // coding would be a pain in the butt
     BANISH: "Banish", // Remove all opponent spells currently on the table (4)
     CHANGE_17: "Change-Up 17", // Change target score to 17 until removed (3)
     CHANGE_21: "Change-Up 21", // Change target score to 21 until removed (2)
