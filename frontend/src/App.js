@@ -223,14 +223,14 @@ function HealthBar(props) {
   </div>
   return (
     <div className='h-100 w-100 d-flex flex-row'>
-      {props.isYou && avatar}
-      <div className='h-100 d-flex flex-row' style={{width: '90%'}}>
+      {/* {props.isYou && avatar} */}
+      <div className='h-100 d-flex flex-row' style={{width: '100%'}}>
         {props.isYou && health}
         {props.isYou && lost}
         {!props.isYou && lost}
         {!props.isYou && health}
       </div>
-      {!props.isYou && avatar}
+      {/* {!props.isYou && avatar} */}
     </div>
   )
 }
@@ -253,7 +253,7 @@ function CardTable(props) {
 
 function Player(props) { 
   const healthBar = (
-    <div className='w-100 h-10'>
+    <div className='w-100' style = {{height: + "%"}}>
         <HealthBar avatar = {props.avatar} health = {props.health} isYou = {props.isYou} className="health-bar"/>
       </div>
   )
