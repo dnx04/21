@@ -5,11 +5,22 @@ import { createContext, useCallback, useContext, useEffect } from 'react';
 import useWebSocket from 'react-use-websocket';
 import { useState } from 'react';
 
-
 const { RESPONSE_TYPE, ERROR, ACTION, MOVE_TYPE, SPELL } = require('./constants');
 const { AVATAR_CNT, SPELL_PER_TURN, MAX_SPELL_IN_HAND, MAX_CARD_ON_TABLE, TIE, GAME_END, ROUND_END, START_HEALTH } = require('./constants');
 
 const WS_URL = 'ws://localhost:3080';
+
+function importAll(r) {
+  let images = {};
+   r.keys().forEach((item, index) => { images[item.replace('./', '')] = r(item); });
+  return images
+ }
+const AVATARS = importAll(require.context('../public/avatars', false, /\.(png|jpe?g|svg)$/));
+const SPELLCARDS = importAll(require.context('../public/spell_cards', false, /\.(png|jpe?g|svg)$/));
+
+console.log(AVATARS)
+console.log(SPELLCARDS)
+
 
 // broadcasted to all descendants: ROOM, USERNAME, WebSocket
 
@@ -18,17 +29,18 @@ const roomcodeContext = createContext({})
 function Deck(props) { 
   const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
     share: true, 
-    filter: true, 
-  }); 
+    filter: (wrappedMsg) => { 
+      let jsonMsg = JSON.parse(wrappedMsg.data); 
+      console.log("gameplay page ", jsonMsg)
+      return jsonMsg.id === MOVE_TYPE.DRAW; 
+    }, 
+  });
 
   useEffect(() => { 
     console.log("Received message, " , lastJsonMessage); 
     if(lastJsonMessage != null) { 
       if(lastJsonMessage.responseType === RESPONSE_TYPE.ERROR) { 
         alert(lastJsonMessage.data.error); 
-      }
-      else if(lastJsonMessage.id == MOVE_TYPE.DRAW) { 
-        
       }
     }
   }, [lastJsonMessage, readyState])
@@ -44,7 +56,7 @@ function Deck(props) {
   })
 
   return (
-    <button onClick = {callDraw} id = "Deck"  className='card'>
+    <button onClick = {callDraw} id = "Deck"  className='bg-white btn-primary'>
       Cards left: {props.numLeft}
     </button>
   )
@@ -52,8 +64,8 @@ function Deck(props) {
 
 function TargetScore(props) { 
   return (
-    <div id = 'TargetScore'>
-        target score: {props.targetScore}
+    <div id = 'TargetScore' className='text-center'>
+        Target: {props.targetScore}
     </div>
   )
 }
@@ -61,13 +73,17 @@ function TargetScore(props) {
 function Hand(props) { 
   const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
     share: true, 
-    filter: true, 
-  }); 
+    filter: (wrappedMsg) => { 
+      let jsonMsg = JSON.parse(wrappedMsg.data); 
+      console.log("gameplay page ", jsonMsg)
+      return jsonMsg.id === MOVE_TYPE.PLAY_SPELL; 
+    }, 
+  });
 
   let cards = []
   for(let i = 0; i < 16; i += 1) { 
     if(i >= props.cardIds.length) { 
-      cards.push(-1); 
+      cards.push(""); 
     }
     else cards.push(props.cardIds[i]); 
   }
@@ -78,19 +94,16 @@ function Hand(props) {
       if(lastJsonMessage.responseType === RESPONSE_TYPE.ERROR) { 
         alert(lastJsonMessage.data.error); 
       }
-      else if(lastJsonMessage.id == MOVE_TYPE.PLAY_SPELL) { 
-        
-      }
     }
   }, [lastJsonMessage, readyState])
 
-  const callPlaySpell = useCallback((cardName) => {
+  const callPlaySpell = useCallback((index) => {
     sendJsonMessage({
       id: MOVE_TYPE.PLAY_SPELL, 
       action: ACTION.PLAY_MOVE, 
       data: { 
         moveType: MOVE_TYPE.PLAY_SPELL, 
-        cardIndex: cardName, 
+        cardIndex: index, 
       }
     })
   })
@@ -99,7 +112,7 @@ function Hand(props) {
   return (
     <div id = "Hand">
       {
-        cards.map((cardId) => <button onClick = {() => callPlaySpell(cardId)} className='card'>{cardId}</button>)
+        cards.map((cardName, index) => <button onClick = {() => callPlaySpell(index)} className='border-1 bg-white w-100 h-100'>{cardName}</button>)
       }
     </div>
   )
@@ -108,17 +121,18 @@ function Hand(props) {
 function EndTurn(props) { 
   const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
     share: true, 
-    filter: true, 
-  }); 
+    filter: (wrappedMsg) => { 
+      let jsonMsg = JSON.parse(wrappedMsg.data); 
+      console.log("gameplay page ", jsonMsg)
+      return jsonMsg.id === MOVE_TYPE.END_TURN; 
+    }, 
+  });
 
   useEffect(() => { 
     console.log("Received message, " , lastJsonMessage); 
     if(lastJsonMessage != null) { 
       if(lastJsonMessage.responseType === RESPONSE_TYPE.ERROR) { 
         alert(lastJsonMessage.data.error); 
-      }
-      else if(lastJsonMessage.id == MOVE_TYPE.END_TURN) { 
-        
       }
     }
   }, [lastJsonMessage, readyState])
@@ -135,7 +149,7 @@ function EndTurn(props) {
 
   return (
     <button onClick = {callEndTurn} id = "EndTurn">
-      End Turn
+      End turn
     </button>
   )
 }
@@ -143,17 +157,18 @@ function EndTurn(props) {
 function Continue(props) { 
   const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
     share: true, 
-    filter: true, 
-  }); 
+    filter: (wrappedMsg) => { 
+      let jsonMsg = JSON.parse(wrappedMsg.data); 
+      console.log("gameplay page ", jsonMsg)
+      return jsonMsg.id === MOVE_TYPE.CONTINUE; 
+    }, 
+  });
 
   useEffect(() => { 
     console.log("Received message, " , lastJsonMessage); 
     if(lastJsonMessage != null) { 
       if(lastJsonMessage.responseType === RESPONSE_TYPE.ERROR) { 
         alert(lastJsonMessage.data.error); 
-      }
-      else if(lastJsonMessage.id == MOVE_TYPE.CONTINUE) { 
-        
       }
     }
   }, [lastJsonMessage, readyState])
@@ -178,10 +193,10 @@ function Continue(props) {
 
 function Options(props) { 
   return (
-    <div id='Options' className = 'flex-vertical-stretch'>
-        <Deck numLeft = {11 - props.turn}/>
-        <TargetScore targetScore = {props.targetScore}/>
-        <Hand cardIds = {props.player[props.you].spellCards}/>
+    <div id='Options' className = 'd-flex flex-column justify-content-center align-items-stretch'>
+        <TargetScore targetScore = {props.targetScore} yourTurn = {props.turn === props.you}/>
+        <Deck numLeft = {11 - props.turn} yourTurn = {props.turn === props.you}/>
+        <Hand cardIds = {props.player[props.you].spellCards} yourTurn = {props.turn === props.you}/>
         <EndTurn/>
     </div>
   )
@@ -189,58 +204,94 @@ function Options(props) {
 
 
 function Avatar(props) { 
+  console.log(AVATARS["" + props.avatar + ".png"])
   return <div>
-    Avatear
+    {/* <a href="https://www.flaticon.com/free-icons/panda-bear" title="panda-bear icons">Panda-bear icons created by Freepik - Flaticon</a> */}
+    {/* <img src={AVATARS["" + props.avatar + ".png"]} style={{backgroundSize: "100% 100%", backgroundRepeat: "no-repeat"}} /> */}
   </div>
 }
 
 function HealthBar(props) { 
+  const avatar = <div style={{width: '10%', height: "100%"}}>
+    <Avatar avatar={props.avatar}/>
+  </div>
+  const lost = <div className='h-100 bg-danger text-danger text-center' style={{width: 100-props.health + "vw"}}>
+    {100 - props.health + "%"}
+  </div>
+  const health = <div className='h-100 bg-success text-white text-center' style={{width: props.health + "vw"}}>
+    {props.health + "%"}
+  </div>
   return (
-    <div className="health-bar">
-      Health bar
+    <div className='h-100 w-100 d-flex flex-row'>
+      {props.isYou && avatar}
+      <div className='h-100 d-flex flex-row' style={{width: '90%'}}>
+        {props.isYou && health}
+        {props.isYou && lost}
+        {!props.isYou && lost}
+        {!props.isYou && health}
+      </div>
+      {!props.isYou && avatar}
     </div>
   )
 }
 
 function Card(props) { 
   return (
-    <div className='card'>
-      Card: {props.cardName}
+    <div className='card text-center d-flex flex-column align-items-center justify-content-center w-75 h-75'>
+      <div style = {{}}>{props.cardName}</div>
     </div>
   )
 }
 
 function CardTable(props) { 
-  const cards = props.cardIds.map(cardId => <Card cardName = {cardId}/>)
   return (
     <div  className="card-table">
-        {cards}
+        {props.cardIds.map((cardId) => <div className = "d-flex flex-column justify-content-center"> <Card cardName = {cardId}/> </div>)}
     </div>
   )
 }
 
 function Player(props) { 
-  if(props.isYou) {
-    return (
-      <div className='flex-vertical-center'>
-        <CardTable cardIds = {props.spellTable} className="card-table"/>
-        <CardTable cardIds = {props.onTable} className="card-table"/>
-        <HealthBar avatar = {props.avatar} health = {props.health} className="health-bar"/>
+  const healthBar = (
+    <div className='w-100 h-10'>
+        <HealthBar avatar = {props.avatar} health = {props.health} isYou = {props.isYou} className="health-bar"/>
       </div>
-    )
-  }
-  else { 
-    return (
-      <div className='flex-vertical-center'>
-        <HealthBar avatar = {props.avatar} health = {props.health} className="health-bar"/>
-        <CardTable cardIds = {props.onTable} className="card-table"/>
-        <CardTable cardIds = {props.spellTable} className="card-table"/>
-      </div>
-    )
-  }
+  )
+  const spellTable = (
+    <div className='w-75' style = {{height: 45 + "%"}}>
+          <CardTable cardIds = {props.spellTable} className="card-table"/>
+        </div>
+  )
+
+  const onTable = (<div className='w-75' style = {{height: 45 + "%"}}>
+    <CardTable cardIds = {props.onTable} className="card-table"/>
+  </div>
+  )
+  return (
+    <div className='w-100 h-100 d-flex flex-column justify-content-center align-items-center' style={{backgroundColor: (props.thisTurn? '#ffffed': '#eee')}}>
+      {props.isYou && spellTable}
+      {props.isYou && onTable}
+      {props.isYou && healthBar}
+      {!props.isYou && healthBar}
+      {!props.isYou && onTable}
+      {!props.isYou && spellTable}
+    </div>
+  )
 }
 
 function GameplayPage() { 
+  const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
+    share: true, 
+    filter: (wrappedMsg) => { 
+      let jsonMsg = JSON.parse(wrappedMsg.data); 
+      console.log("gameplay page ", jsonMsg)
+      return jsonMsg.responseType === RESPONSE_TYPE.GAME_STATE; 
+    }, 
+  });
+
+  const {roomcode, setRoomcode} = useContext(roomcodeContext) // nham [] voi {} VLKLDKFDFD DMM thang ccc
+  // const [gamestate, setGamestate] = useState(null)
+
   const [gamestate, setGamestate] = useState({
     player: [
       {
@@ -269,30 +320,57 @@ function GameplayPage() {
     targetScore: 14, 
   })
 
-  let youId = 0, opId = 1; 
+  useEffect(() => {
+    console.log("gamepage received")
+    if(lastJsonMessage != null) { 
+      setGamestate({
+        ...lastJsonMessage.data
+      })
+      console.log("game state: ", {
+        ...lastJsonMessage
+      })
+    }
+  }, [lastJsonMessage])
 
-  // useEffect(() => {
-  //   if(lastJsonMessage != null) { 
-  //     setGamestate({
-  //       ...lastJsonMessage.data
-  //     })
-  //     youId = gamestate.you; 
-  //     opId = 1 - youId; 
-  //   }
-  // }, [lastJsonMessage])
+  console.log(roomcode)
   
   return (
-    <div id = 'GameplayPage' className='Page full-span'>
-      <Options {...gamestate} />
-      <div className = "full-span vertical-grid-2">
-        <Player {...gamestate.player[opId]} isWinner = {opId === gamestate.winner} thisTurn = {opId === gamestate.turn} isYou = {false}/>
-        <Player {...gamestate.player[youId]} isWinner = {youId === gamestate.winner} thisTurn = {youId === gamestate.turn} isYou = {true}/>
-      </div>
+    <div id = 'GameplayPage' className='w-100 h-100 p-0 m-0 bg-light'>
+      { 
+        gamestate != null && 
+        <div className='w-100 h-100 p-0 m-0'>
+          <Options {...gamestate} />
+          <div className='w-100 h-100 p-0 m-0'>
+            <div className='h-50 w-100'>
+              <Player {...gamestate.player[1 - gamestate.you]} isWinner = {gamestate.you !== gamestate.winner} thisTurn = {gamestate.you !== gamestate.turn} isYou = {false}/>
+            </div>
+            <div className='h-50 w-100'>
+              <Player {...gamestate.player[gamestate.you]} isWinner = {gamestate.you === gamestate.winner} thisTurn = {gamestate.you === gamestate.turn} isYou = {true}/>
+            </div>
+           </div>
+        </div>
+      }
+      {
+        gamestate == null && 
+        <div className='w-100 h-100 d-flex flex-column align-items-center justify-content-center'>
+          <div className=''>Room code: {roomcode} </div>
+          <div className=''>Waiting for opponent...</div>
+        </div>
+      }
     </div>
   )
 }
 
 function UsernamePage(props) { 
+  const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
+    share: true, 
+    filter: (wrappedMsg) => { 
+      let jsonMsg = JSON.parse(wrappedMsg.data); 
+      console.log("usernamepage", jsonMsg)
+      return jsonMsg.id === ACTION.SET_USERNAME || jsonMsg.id === ACTION.SET_AVATAR; 
+    }, 
+  }); 
+
   const username = props.username, 
     setUsername = props.setUsername, 
     avatar = props.avatar, 
@@ -301,13 +379,8 @@ function UsernamePage(props) {
   const [formUsername, setFormUsername] = useState('')
   const [formAvatar, setFormAvatar] = useState(null)
 
-  const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
-    share: true, 
-    filter: true, 
-  }); 
-
   useEffect(() => { 
-    console.log("Received message, " , lastJsonMessage); 
+    console.log("Username Page received message, " , lastJsonMessage); 
     if(lastJsonMessage != null) { 
       if(lastJsonMessage.responseType === RESPONSE_TYPE.ERROR) { 
         alert(lastJsonMessage.data.error); 
@@ -318,13 +391,10 @@ function UsernamePage(props) {
       else if(lastJsonMessage.id == ACTION.SET_AVATAR){ 
         setAvatar(formAvatar); 
       }
-      else { 
-        console.log("????")
-      }
     }
   }, [lastJsonMessage, readyState])
 
-  const callSendInfo = useCallback(() => {
+  const callSendInfo = useCallback((e) => {
     sendJsonMessage({
       id: ACTION.SET_USERNAME, 
       action: ACTION.SET_USERNAME, 
@@ -340,15 +410,17 @@ function UsernamePage(props) {
         avatar: avatarrr
       }
     })
-    console.log(avatarrr)
+    e.preventDefault(); // HUGE BUG BRO
   })
 
   return (
-    <div id = 'UsernamePage' className='Page full-span flex-center-center'>
-      <form onSubmit={callSendInfo} className = 'flex-vertical-stretch'>
-        <input onChange={(e) => { setFormUsername(e.target.value)}} type="text" placeholder='Enter your name' className='form-input'/>
-        {/* <input onChange={(e) => { setFormAvatar(e.target.value)}} type="text" placeholder='Enter your name' className='form-input'/> */}
-        <button type="submit" className='form-button'>Let's go!</button>
+    <div id = 'UsernamePage' className='full-span flex-center-center' style={{backgroundColor: '#eee'}}>
+      <form onSubmit={callSendInfo} className='d-flex flex-column align-items-stretch'>
+        <div className='form-group'>
+          <input onChange={(e) => { setFormUsername(e.target.value)}} type="text" placeholder='Enter your name' className='form-control'/>
+          {/* <input onChange={(e) => { setFormAvatar(e.target.value)}} type="text" placeholder='Enter your name' className='form-control'/> */}
+        </div>
+        <button type="submit" className='btn btn-warning'>Let's go!</button>
       </form>
     </div>
   )
@@ -357,8 +429,9 @@ function UsernamePage(props) {
 function LandingPage() { 
   const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
     share: true, 
-    filter: true, 
-    // (jsonMsg) => { console.log(jsonMsg); return jsonMsg.id === ACTION.CREATE_ROOM}, // return true no matter what? 
+    filter: (wrappedMsg) => { 
+      let jsonMsg = JSON.parse(wrappedMsg.data)
+      return jsonMsg.id === ACTION.CREATE_ROOM || jsonMsg.id === ACTION.JOIN_ROOM}, 
   }); 
 
   const {roomcode, setRoomcode} = useContext(roomcodeContext)
@@ -370,7 +443,7 @@ function LandingPage() {
       if(lastJsonMessage.responseType === RESPONSE_TYPE.ERROR) { 
         alert(lastJsonMessage.data.error); 
       }
-      else { 
+      else {
         setRoomcode(lastJsonMessage.data.roomCode); 
         console.log(lastJsonMessage.data.roomCode)
       }
@@ -386,7 +459,7 @@ function LandingPage() {
   })
 
   const callJoinRoom = useCallback((e) => { 
-    console.log("entering room: 09j9dp")
+    console.log("entering room:")
     sendJsonMessage({ 
         id: ACTION.JOIN_ROOM, 
         action: ACTION.JOIN_ROOM,
@@ -398,13 +471,17 @@ function LandingPage() {
   })
 
   return (
-    <div id = 'LandingPage' className='Page full-span flex-center-center'>
-      <div className='flex-vertical-stretch'>
-        <button onClick={callCreateRoom} className = 'form-button'>Create a new room</button>
-        <form onSubmit={callJoinRoom} className = 'flex-vertical-stretch'>
-          <input onChange={(e) => { setFormcontent(e.target.value)}} type="text" placeholder='Enter a room code' className='form-input'/>
-          <button type="submit" className='form-button'>Enter an existing room</button>
+    <div id = 'LandingPage' className='mw-100 h-100 m-0 p-0 d-flex justify-content-center align-items-center' style={{backgroundColor: '#eee'}}>
+      <div className = 'd-flex flex-column align-items-stretch'>
+        <form onSubmit={callJoinRoom} className='d-flex flex-column align-items-stretch'>
+          <div className='form-group'>
+            <input onChange={(e) => { setFormcontent(e.target.value)}} type="text" placeholder='Enter a room code' className='form-control'/>
+          </div>
+          
+          <button type="submit" className='btn btn-warning'>Enter an existing room</button>
         </form>
+        <hr className="hr" /> 
+        <button onClick={callCreateRoom} className = 'btn btn-warning'>Create a new room</button>
       </div>
     </div>
   )
@@ -423,15 +500,16 @@ function App() {
   }); // this connection is closed when the object is destructed? 
 
   useEffect(() => 
-    console.log(lastJsonMessage), [lastJsonMessage])
+    console.log("latest message: ", lastJsonMessage), [lastJsonMessage])
 
   return ( // wrapping a state hook inside a context just to update? seems really stupid
-    <div className='full-span'>
+    <div className='mw-100 h-100 m-0 p-0'>
         <roomcodeContext.Provider value = {{roomcode, setRoomcode}} >
           {roomcode === '' && <LandingPage/>} 
           {/* JSX code must be wrapped inside {} */}
           {roomcode !== '' && username === '' && <UsernamePage {...{username, setUsername, roomcode, setRoomcode}}/>}
-          {roomcode !== '' && username !== '' && <GameplayPage/>}
+          {/* {roomcode !== '' && username !== '' && <GameplayPage/>} */}
+          <GameplayPage/>
         </roomcodeContext.Provider>
       </div>
   );

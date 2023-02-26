@@ -1,5 +1,5 @@
 .Page { 
-  position:absolute; 
+  /* position:;  */
   background-color: #00296B;
 }
 
@@ -22,40 +22,8 @@
   align-items: center;
 }
 
-.flex-vertical-stretch { 
-  display: flex; 
-  flex-direction: column;
-  justify-content: center;
-  align-items: stretch;
-}
-
-.flex-vertical-center { 
-  display: flex; 
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.form-input { 
-  /* width: 100%; */
-  height: 20px; 
-  margin: 3px;
-  border: 10px;
-  border-radius: 4px;
-  border-color: aquamarine;
-}
-
-.form-button { 
-  /* width: 100%; */
-  height: 20px; 
-  margin: 3px;
-  border: 10px;
-  border-radius: 4px;
-}
-
 .card-table { 
-  height: 45%;
-  width: 60%;
+  height: 100%;
   display: grid;
   grid-template-columns: 20% 20% 20% 20% 20%;
 }
@@ -64,21 +32,20 @@
   height: 10%;
 }
 
-.card { 
-  margin: 5px;
-  background-color: #FFFFFF;
-  border-color: aquamarine;
-  border-radius: 5px;
+button {
+  transition-duration: 0.4s;
 }
 
-.small-card { 
-
+button:hover {
+  border: 20px; 
+  font-weight: bold;
 }
 
 #Options { 
   height: 100vh;
+  width: 18vw; 
   position: fixed;
-  left: 90%;
+  left: 80%;
   gap: 5vh 0vh 5vh; 
 }
 
