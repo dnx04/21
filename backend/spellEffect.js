@@ -97,7 +97,7 @@ effect[SPELL.ONE_UP] = (game) => {
 effect[SPELL.PERFECT_DRAW] = (game) => {
     let t = game.turn;
     if (game.player[t].onTable.length < MAX_CARD_ON_TABLE) {
-        let cardToDraw = target;
+        let cardToDraw = game.targetScore;
         for (let g of game.player[t].onTable) cardToDraw -= g;
         let bestCard = game.player[t].onDeck[0];
         for (let g of game.player[t].onDeck) {
