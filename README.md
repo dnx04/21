@@ -1,10 +1,6 @@
 # 21 Online
 
-**21 Online** is a web-based online multiplayer version of the card game *21* first seen in *Resident Evil 7: Biohazard*.
-
-Changes:
-- Removed gore (we don't like scary here)
-- Added the ability to play with other people!
+**21 Online** is a web-based online multiplayer variation of Blackjack ~~that has never been seen before.~~
 
 This is a submission to the *iNTUition v9.0* hackathon.
 
