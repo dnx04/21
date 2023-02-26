@@ -236,7 +236,7 @@ function HealthBar(props) {
 
 function Card(props) { 
   return (
-    <div className='card text-center d-flex flex-column align-items-center justify-content-center border-warning' style={{borderWidth: "3px", height: '90%', width: '50%'}}>
+    <div className='card text-center d-flex flex-column align-items-center justify-content-center border-warning' style={{borderWidth: "3px", height: '90%', width: '50%', backgroundColor: props.cardName === -1? 'red': 'white'}}>
       <div style = {{}}>{props.cardName}</div>
     </div>
   )

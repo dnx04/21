@@ -64,10 +64,10 @@ function change(game) {
     }
 }
 
-effect[SPELL.CHANGE_17] = change;
-effect[SPELL.CHANGE_21] = change;
-effect[SPELL.CHANGE_24] = change;
-effect[SPELL.CHANGE_27] = change;
+effect[SPELL.CHANGE_17] = (game) => change(game);
+effect[SPELL.CHANGE_21] = (game) => change(game);
+effect[SPELL.CHANGE_24] = (game) => change(game);
+effect[SPELL.CHANGE_27] = (game) => change(game);
 // Effect handled at recalculateAtkAndTarget()
 
 function autoDraw(target, game) {
@@ -75,7 +75,7 @@ function autoDraw(target, game) {
     let j = -1;
     for (let i in game.player[t].onDeck) if (game.player[t].onDeck[i] === target) j = i;
     if (j!=-1 && game.player[t].onTable.length<5) {
-        game.player[t].onTable.push(game.player[t].onDeck.splice(j,j));
+        game.player[t].onTable.push(game.player[t].onDeck.splice(j,1)[0]);
     }
 }
 

@@ -45,7 +45,7 @@ let roomInfo = {};
 function sendJson(json, userId) {
 
   console.log("Sending:");
-  console.log(json);
+  console.log(JSON.stringify(json, null, 2));
   console.log("to:");
   console.log(userId);
   console.log(userInfo[userId].username);
@@ -302,65 +302,74 @@ function endRound(roomCode) {
   room.player[1].ready = 0; 
 }
 
-function draw(roomCode) {
+function draw(id, userId, roomCode) {
   let room = roomInfo[roomCode];
   let t = room.turn;
   if (room.player[t].onTable.length === MAX_CARD_ON_TABLE) {
     let error = {
+      id: id,
       responseType: RESPONSE_TYPE.ERROR,
       data: {
         error: ERROR.TABLE_FULL
       }
     };
-    return error;
+    sendJson(error, userId);
   }
   else {    
     room.consecutiveEnd = 0;
     room.player[t].onTable.push(room.player[t].onDeck.shift());
     room.turn = 1 - room.turn;
     let ok = {
+      id: id,
       responseType: RESPONSE_TYPE.OK,
       data: {}
     };
+    
+    sendJson(ok, userId);
     broadcastGameState(roomCode);
-    return ok;
   }
 }
 
 
-function playSpell(roomCode, cardIndex) {
+function playSpell(id, userId, roomCode, cardIndex) {
   let room = roomInfo[roomCode];
   let t = room.turn;
 
   if (cardIndex < room.player[t].spellCards.length && cardIndex >= 0) {
     room.consecutiveEnd = 0;
-    const cardPlayed = room.player[t].spellCards.splice(cardIndex, cardIndex);
-    room.player[t].spellTable.push(cardPlayed);
-
-    effect[cardPlayed](room);
+    console.log(room.player[t].spellCards);
+    const cardPlayed = room.player[t].spellCards.splice(cardIndex, 1);
+    room.player[t].spellTable.push(cardPlayed[0]);
+    console.log(cardIndex);
+    console.log(cardPlayed);
+    console.log(cardPlayed[0]);
+    effect[cardPlayed[0]](room);
     recalculateAtkAndTarget(room);
 
     let ok = {
+      id: id,
       responseType: RESPONSE_TYPE.OK,
       data: {}
     };
+    sendJson(ok, userId);
     broadcastGameState(roomCode);
     if (lasting[cardPlayed] !== 1) room.player[t].spellTable.pop();
-    return ok;
+
   }
   else {
     let error = {
+      id: id,
       responseType: RESPONSE_TYPE.ERROR,
       data: {
         error: ERROR.INVALID_INDEX
       }
     };
-    return error;
+    sendJson(error, userId);
   }
 }
 
 
-function endTurn(roomCode) {
+function endTurn(id, userId, roomCode) {
   let room = roomInfo[roomCode];
   room.consecutiveEnd ++;
   room.turn = 1 - room.turn;
@@ -368,17 +377,26 @@ function endTurn(roomCode) {
     endRound(roomCode);
   }
   let ok = {
+    id: id,
     responseType: RESPONSE_TYPE.OK,
     data: {}
   };
+  sendJson(ok, userId);
   broadcastGameState(roomCode);
-  return ok;
 }
 
-function Continue(roomCode, userId) {
+function Continue(id ,userId, roomCode) {
   let room = roomInfo[roomCode];
   if (room.turn === ROUND_END && room.round !== GAME_END) {
     for (let p of room.player) if (p.user === userId) p.ready = 1;
+    
+    let ok = {
+      id: id,
+      responseType: RESPONSE_TYPE.OK,
+      data: {}
+    };
+    sendJson(ok, userId);
+    
     if (room.player[0].ready === 1 && room.player[1].ready === 1) {
 
       if (room.round === GAME_END) {
@@ -389,10 +407,6 @@ function Continue(roomCode, userId) {
       }
       broadcastGameState(roomCode);
     }
-    return {
-      responseType: RESPONSE_TYPE.OK,
-      data: {}
-    };
   }
   else return {
     responseType: RESPONSE_TYPE.ERROR,
@@ -405,26 +419,28 @@ function Continue(roomCode, userId) {
 actionHandlers = {}
 /* --- SET_USERNAME --- */
 
-function setUsername(userId, data) {
+function setUsername(id, userId, data) {
   const username = data.username;
   let response = {}
 
   if (username !== '') {
     userInfo[userId].username = username;
     response = {
+      id: id,
       responseType: RESPONSE_TYPE.OK,
       data: {}
     };
   }
   else {
     response = {
+      id: id,
       responseType: RESPONSE_TYPE.ERROR,
       data: {
         error: ERROR.EMPTY_USERNAME
       }
     };
   }
-  return response;
+  sendJson(response, userId);
 }
 actionHandlers[ACTION.SET_USERNAME]=setUsername;
 
@@ -432,26 +448,28 @@ actionHandlers[ACTION.SET_USERNAME]=setUsername;
 
 /* --- SET_AVATAR --- */
 
-function setAvatar(userId, data) {
+function setAvatar(id, userId, data) {
   const avatar = data.avatar;
   let response = {}
 
   if (avatar >= 0 && avatar < AVATAR_CNT) {
     userInfo[userId].avatar = avatar;
     response = {
+      id: id,
       responseType: RESPONSE_TYPE.OK,
       data: {}
     };
   }
   else {
     response = {
+      id: id,
       responseType: RESPONSE_TYPE.ERROR,
       data: {
         error: ERROR.INVALID_AVATAR
       }
     };
   }
-  return response;
+  sendJson(response, userId);
 }
 actionHandlers[ACTION.SET_AVATAR]=setAvatar;
 
@@ -459,7 +477,7 @@ actionHandlers[ACTION.SET_AVATAR]=setAvatar;
 
 const alphabet='abcdefghijklmnopqrstuvwxyz0123456789';
 
-function createRoom(userId, data) {
+function createRoom(id, userId, data) {
   let response = {}
   if (userInfo[userId].room === '') {
 
@@ -473,6 +491,7 @@ function createRoom(userId, data) {
     addPlayerToRoom(roomCode, userId);
 
     response = {
+      id: id,
       responseType: RESPONSE_TYPE.ROOM_CODE,
       data: {
         roomCode: roomCode
@@ -481,6 +500,7 @@ function createRoom(userId, data) {
   }
   else {
     response = {
+      id: id,
       responseType: RESPONSE_TYPE.ERROR,
       data: {
         error: ERROR.ALREADY_IN_ROOM,
@@ -488,7 +508,7 @@ function createRoom(userId, data) {
       }
     };
   }
-  return response;
+  sendJson(response, userId);
 }
 actionHandlers[ACTION.CREATE_ROOM]=createRoom;
 
@@ -496,7 +516,7 @@ actionHandlers[ACTION.CREATE_ROOM]=createRoom;
 
 /* --- JOIN_ROOM --- */
 
-function joinRoom(userId, data) {
+function joinRoom(id, userId, data) {
   console.log('ok good we at joinRoom');
   let response = {}
   if (userInfo[userId].room === '') {
@@ -504,19 +524,25 @@ function joinRoom(userId, data) {
     let roomCode = data.roomCode;
     if (roomInfo[roomCode] === undefined) {
       response = {
+        id: id,
         responseType: RESPONSE_TYPE.ERROR,
         data: {
           error: ERROR.ROOM_NOT_EXIST,
         }
       };
+      
+      sendJson(response, userId);
     }
     else if (roomInfo[roomCode].player.length === 2) {
       response = {
+        id: id,
         response: RESPONSE_TYPE.ERROR,
         data: {
           error: ERROR.ROOM_FULL
         }
       };
+      
+      sendJson(response, userId);
     }
     else {
       
@@ -527,24 +553,27 @@ function joinRoom(userId, data) {
       userInfo[userId].room = roomCode;
       startGame(roomCode);
       console.log('started game, now broadcast dat state pls');
-      broadcastGameState(roomCode);
+
       response = {
+        id: id,
         response: RESPONSE_TYPE.OK,
         data: {}
       }
-
+      sendJson(response, userId);
+      broadcastGameState(roomCode);
     }
   }
   else {
     response = {
+      id: id,
       responseType: RESPONSE_TYPE.ERROR,
       data: {
         error: ERROR.ALREADY_IN_ROOM,
         roomCode: userInfo[userId].room
       }
     };
+    sendJson(response, userId);
   }
-  return response;
 }
 actionHandlers[ACTION.JOIN_ROOM]=joinRoom;
 
@@ -552,34 +581,56 @@ actionHandlers[ACTION.JOIN_ROOM]=joinRoom;
 
 /* --- PLAY_MOVE --- */
 
-function playMove(userId, data) {
+function playMove(id, userId, data) {
   let response = {};
-  const room = roomInfo[userInfo[userId].room];
+  console.log(userId);
+  console.log(JSON.stringify(userInfo[userId]));
+  console.log(JSON.stringify(roomInfo[userInfo[userId].room]));
+
+  const roomCode = userInfo[userId].room;
+  if (roomCode === "") {
+    let error = {
+      responseType: RESPONSE_TYPE.ERROR,
+      data: {
+        error: ERROE.NOT_IN_GAME
+      }
+    };
+    sendJson(error,userId);
+    return;
+  }
+  const room = roomInfo[roomCode];
   if ((data.moveType !== MOVE_TYPE.CONTINUE) && (room.turn === ROUND_END || room.player[room.turn].user !== userId)) {
-    return {
+    response = {
       responseType: RESPONSE_TYPE.ERROR,
       data: {
         error: ERROR.NOT_YOUR_TURN
       }
     };
+    sendJson(response, userId);
   }
   else {
     switch (data.moveType) {
       case MOVE_TYPE.DRAW: 
-        return draw(roomCode);
+        draw(id, userId, roomCode);
+        break;
       case MOVE_TYPE.PLAY_SPELL: 
-        return playSpell(roomCode, data.cardIndex);
+        playSpell(id, userId, roomCode, data.cardIndex);
+        break;
       case MOVE_TYPE.END_TURN:
-        return endTurn(roomCode);
+        endTurn(id, userId, roomCode);
+        break;
       case MOVE_TYPE.CONTINUE:
-        return Continue(roomCode, userId);
+        Continue(id, userId, roomCode);
+        break;
       default:
-        return {
+        response = {
           responseType: RESPONSE_TYPE.ERROR,
           data: {
             error: ERROR.UNKNOWN_MOVE_TYPE
           }
         };
+        sendJson(response, userId);
+        break;
     }
   }
 }
@@ -594,16 +645,14 @@ function handleMessage(message, userId) {
 
 
   console.log("Received:");
-  console.log(json);
+  console.log(JSON.stringify(json, null, 2));
   console.log("from:");
   console.log(userId);
   console.log(userInfo[userId].username);
   console.log("-------------------------------------------------------------------");
 
   let handler = actionHandlers[json.action]
-  let response = handler(userId, json.data);
-  response.id = json.id;
-  sendJson(response, userId);
+  handler(json.id, userId, json.data);
 }
 
 function handleDisconnect(userId) {

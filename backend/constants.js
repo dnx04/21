@@ -59,7 +59,8 @@ const ERROR = {
     TABLE_FULL: 'Table is full. You can only draw a maximum of 5 cards per round',
     INVALID_INDEX: 'Invalid card index',
     UNKNOWN_MOVE_TYPE: 'Unknown move type',
-    INVALID_TIME: 'You cannot use the Continue move right now'
+    INVALID_TIME: 'You cannot use the Continue move right now',
+    NOT_IN_GAME: 'You are not in game',
 };
 
 module.exports = {
