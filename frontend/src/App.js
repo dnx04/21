@@ -215,12 +215,18 @@ function HealthBar(props) {
   const avatar = <div style={{width: '10%', height: "100%"}}>
     <Avatar avatar={props.avatar}/>
   </div>
-  const lost = <div className='h-100 bg-danger text-danger text-center' style={{width: 100-props.health + "vw"}}>
+  const lost = (<div className='h-100 text-center' style={{width: 100-props.health + "vw", backgroundColor: "#00296B", color: "#00296B"}}>
     {100 - props.health + "%"}
   </div>
-  const health = <div className='h-100 bg-success text-white text-center' style={{width: props.health + "vw"}}>
+  )
+  
+  const health_bg = props.isYou?  "linear-gradient(to right, red , #00296B)": "linear-gradient(to right, #00296B, red)"
+  console.log(health_bg)
+  const health = (<div className='h-100 text-white text-center' style={{width: props.health + "vw", backgroundImage: health_bg}}>
     {props.health + "%"}
   </div>
+  )
+  
   return (
     <div className='h-100 w-100 d-flex flex-row'>
       {/* {props.isYou && avatar} */}
@@ -237,7 +243,7 @@ function HealthBar(props) {
 
 function Card(props) { 
   return (
-    <div className='card text-center d-flex flex-column align-items-center justify-content-center w-75 h-75'>
+    <div className='card text-center d-flex flex-column align-items-center justify-content-center border-warning' style={{borderWidth: "3px", height: '90%', width: '50%'}}>
       <div style = {{}}>{props.cardName}</div>
     </div>
   )
@@ -253,22 +259,22 @@ function CardTable(props) {
 
 function Player(props) { 
   const healthBar = (
-    <div className='w-100' style = {{height: + "%"}}>
+    <div className='w-100' style = {{height: "5%"}}>
         <HealthBar avatar = {props.avatar} health = {props.health} isYou = {props.isYou} className="health-bar"/>
       </div>
   )
   const spellTable = (
-    <div className='w-75' style = {{height: 45 + "%"}}>
+    <div className='w-75' style = {{height: 47.5 + "%"}}>
           <CardTable cardIds = {props.spellTable} className="card-table"/>
         </div>
   )
 
-  const onTable = (<div className='w-75' style = {{height: 45 + "%"}}>
+  const onTable = (<div className='w-75' style = {{height: 47.5 + "%"}}>
     <CardTable cardIds = {props.onTable} className="card-table"/>
   </div>
   )
   return (
-    <div className='w-100 h-100 d-flex flex-column justify-content-center align-items-center' style={{backgroundColor: (props.thisTurn? '#ffffed': '#eee')}}>
+    <div className='w-100 h-100 d-flex flex-column justify-content-center align-items-center' style={{backgroundColor: '#00296B'}}>
       {props.isYou && spellTable}
       {props.isYou && onTable}
       {props.isYou && healthBar}

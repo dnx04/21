@@ -3,7 +3,7 @@ body {
   height: 100vh;
   padding: 0;
   margin: 0;
-  font-family:"Sans-serif"
+  font-family:Fantasy
 }
 
 #root {
@@ -11,4 +11,5 @@ body {
   height: 100%;
   padding: 0;
   margin: 0;
+  font-family:Fantasy
 }
