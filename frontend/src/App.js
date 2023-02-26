@@ -5,6 +5,8 @@ import { createContext, useCallback, useContext, useEffect } from 'react';
 import useWebSocket from 'react-use-websocket';
 import { useState } from 'react';
 
+// import avatar1 from "../public/avatars"
+
 const { RESPONSE_TYPE, ERROR, ACTION, MOVE_TYPE, SPELL } = require('./constants');
 const { AVATAR_CNT, SPELL_PER_TURN, MAX_SPELL_IN_HAND, MAX_CARD_ON_TABLE, TIE, GAME_END, ROUND_END, START_HEALTH } = require('./constants');
 
@@ -15,11 +17,12 @@ function importAll(r) {
    r.keys().forEach((item, index) => { images[item.replace('./', '')] = r(item); });
   return images
  }
-const AVATARS = importAll(require.context('../public/avatars', false, /\.(png|jpe?g|svg)$/));
-const SPELLCARDS = importAll(require.context('../public/spell_cards', false, /\.(png|jpe?g|svg)$/));
+// const AVATARS = importAll(require.context('../public/avatars', false, /\.(png|jpe?g|svg)$/));
+// const SPELLCARDS = importAll(require.context('../public/spell_cards', false, /\.(png|jpe?g|svg)$/));
 
-console.log(AVATARS)
-console.log(SPELLCARDS)
+
+// console.log(AVATARS)
+// console.log(SPELLCARDS)
 
 
 // broadcasted to all descendants: ROOM, USERNAME, WebSocket
@@ -31,13 +34,11 @@ function Deck(props) {
     share: true, 
     filter: (wrappedMsg) => { 
       let jsonMsg = JSON.parse(wrappedMsg.data); 
-      console.log("gameplay page ", jsonMsg)
       return jsonMsg.id === MOVE_TYPE.DRAW; 
     }, 
   });
 
   useEffect(() => { 
-    console.log("Received message, " , lastJsonMessage); 
     if(lastJsonMessage != null) { 
       if(lastJsonMessage.responseType === RESPONSE_TYPE.ERROR) { 
         alert(lastJsonMessage.data.error); 
@@ -75,7 +76,6 @@ function Hand(props) {
     share: true, 
     filter: (wrappedMsg) => { 
       let jsonMsg = JSON.parse(wrappedMsg.data); 
-      console.log("gameplay page ", jsonMsg)
       return jsonMsg.id === MOVE_TYPE.PLAY_SPELL; 
     }, 
   });
@@ -89,7 +89,6 @@ function Hand(props) {
   }
 
   useEffect(() => { 
-    console.log("Received message, " , lastJsonMessage); 
     if(lastJsonMessage != null) { 
       if(lastJsonMessage.responseType === RESPONSE_TYPE.ERROR) { 
         alert(lastJsonMessage.data.error); 
@@ -108,7 +107,6 @@ function Hand(props) {
     })
   })
 
-  console.log(cards)
   return (
     <div id = "Hand">
       {
@@ -123,13 +121,11 @@ function EndTurn(props) {
     share: true, 
     filter: (wrappedMsg) => { 
       let jsonMsg = JSON.parse(wrappedMsg.data); 
-      console.log("gameplay page ", jsonMsg)
       return jsonMsg.id === MOVE_TYPE.END_TURN; 
     }, 
   });
 
   useEffect(() => { 
-    console.log("Received message, " , lastJsonMessage); 
     if(lastJsonMessage != null) { 
       if(lastJsonMessage.responseType === RESPONSE_TYPE.ERROR) { 
         alert(lastJsonMessage.data.error); 
@@ -159,13 +155,11 @@ function Continue(props) {
     share: true, 
     filter: (wrappedMsg) => { 
       let jsonMsg = JSON.parse(wrappedMsg.data); 
-      console.log("gameplay page ", jsonMsg)
       return jsonMsg.id === MOVE_TYPE.CONTINUE; 
     }, 
   });
 
   useEffect(() => { 
-    console.log("Received message, " , lastJsonMessage); 
     if(lastJsonMessage != null) { 
       if(lastJsonMessage.responseType === RESPONSE_TYPE.ERROR) { 
         alert(lastJsonMessage.data.error); 
@@ -185,7 +179,7 @@ function Continue(props) {
 
   return (
     <button onClick = {callContinue} id = "EndTurn">
-      New game
+      Next round
     </button>
   )
 }
@@ -197,36 +191,35 @@ function Options(props) {
         <TargetScore targetScore = {props.targetScore} yourTurn = {props.turn === props.you}/>
         <Deck numLeft = {11 - props.turn} yourTurn = {props.turn === props.you}/>
         <Hand cardIds = {props.player[props.you].spellCards} yourTurn = {props.turn === props.you}/>
-        <EndTurn/>
+        {props.turn == 2? <Continue/> : <EndTurn/>}
     </div>
   )
 }
 
 
 function Avatar(props) { 
-  console.log(AVATARS["" + props.avatar + ".png"])
+  // console.log(AVATARS[`${props.avatar}.png`])
   return <div>
     {/* <a href="https://www.flaticon.com/free-icons/panda-bear" title="panda-bear icons">Panda-bear icons created by Freepik - Flaticon</a> */}
-    {/* <img src={AVATARS["" + props.avatar + ".png"]} style={{backgroundSize: "100% 100%", backgroundRepeat: "no-repeat"}} /> */}
+    <img src={require('./assets/avatars/1.png')} style={{backgroundSize: "100% 100%", backgroundRepeat: "no-repeat"}} />
   </div>
 }
 
 function HealthBar(props) { 
-  const avatar = <div style={{width: '10%', height: "100%"}}>
-    <Avatar avatar={props.avatar}/>
-  </div>
-  const lost = (<div className='h-100 text-center' style={{width: 100-props.health + "vw", backgroundColor: "#00296B", color: "#00296B"}}>
+  // const avatar = <div style={{width: '5%', height: "100%"}}>
+    // <Avatar avatar={props.avatar}/>
+  // </div>
+  const lost = (<div className='h-100 text-center' style={{width: (10-props.health) * 10 + "vw", backgroundColor: "#00296B", color: "#00296B"}}>
     {100 - props.health + "%"}
   </div>
   )
   
   const health_bg = props.isYou?  "linear-gradient(to right, red , #00296B)": "linear-gradient(to right, #00296B, red)"
-  console.log(health_bg)
-  const health = (<div className='h-100 text-white text-center' style={{width: props.health + "vw", backgroundImage: health_bg}}>
-    {props.health + "%"}
+  const health = (<div className='h-100 text-white text-center' style={{width: props.health * 10 + "vw", backgroundImage: health_bg}}>
+    {props.health}
   </div>
   )
-  
+
   return (
     <div className='h-100 w-100 d-flex flex-row'>
       {/* {props.isYou && avatar} */}
@@ -290,55 +283,48 @@ function GameplayPage() {
     share: true, 
     filter: (wrappedMsg) => { 
       let jsonMsg = JSON.parse(wrappedMsg.data); 
-      console.log("gameplay page ", jsonMsg)
       return jsonMsg.responseType === RESPONSE_TYPE.GAME_STATE; 
     }, 
   });
 
   const {roomcode, setRoomcode} = useContext(roomcodeContext) // nham [] voi {} VLKLDKFDFD DMM thang ccc
-  // const [gamestate, setGamestate] = useState(null)
+  const [gamestate, setGamestate] = useState(null)
 
-  const [gamestate, setGamestate] = useState({
-    player: [
-      {
-        username : 'you', 
-        avatar : 0, 
-        onTable : [1, 2], 
-        spellTable : ["Draw 7"], 
-        spellCards : ["Draw 7"], 
-        health : 30, 
-        attack : 50, 
-      }, 
-      {
-        username : 'op', 
-        avatar : 1, 
-        onTable : [-1, 3], 
-        spellTable : ["Draw 6"], 
-        spellCards : [-1], 
-        health : 60, 
-        attack : 20, 
-      }
-    ], 
-    turn : 1, 
-    winner: -1, 
-    you: 0, 
-    round: 1, 
-    targetScore: 14, 
-  })
+  // const [gamestate, setGamestate] = useState({
+  //   player: [
+  //     {
+  //       username : 'you', 
+  //       avatar : 0, 
+  //       onTable : [1, 2], 
+  //       spellTable : ["Draw 7"], 
+  //       spellCards : ["Draw 7"], 
+  //       health : 30, 
+  //       attack : 50, 
+  //     }, 
+  //     {
+  //       username : 'op', 
+  //       avatar : 1, 
+  //       onTable : [-1, 3], 
+  //       spellTable : ["Draw 6"], 
+  //       spellCards : [-1], 
+  //       health : 60, 
+  //       attack : 20, 
+  //     }
+  //   ], 
+  //   turn : 1, 
+  //   winner: -1, 
+  //   you: 0, 
+  //   round: 1, 
+  //   targetScore: 14, 
+  // })
 
   useEffect(() => {
-    console.log("gamepage received")
     if(lastJsonMessage != null) { 
       setGamestate({
         ...lastJsonMessage.data
       })
-      console.log("game state: ", {
-        ...lastJsonMessage
-      })
     }
   }, [lastJsonMessage])
-
-  console.log(roomcode)
   
   return (
     <div id = 'GameplayPage' className='w-100 h-100 p-0 m-0 bg-light'>
@@ -372,7 +358,6 @@ function UsernamePage(props) {
     share: true, 
     filter: (wrappedMsg) => { 
       let jsonMsg = JSON.parse(wrappedMsg.data); 
-      console.log("usernamepage", jsonMsg)
       return jsonMsg.id === ACTION.SET_USERNAME || jsonMsg.id === ACTION.SET_AVATAR; 
     }, 
   }); 
@@ -386,7 +371,6 @@ function UsernamePage(props) {
   const [formAvatar, setFormAvatar] = useState(null)
 
   useEffect(() => { 
-    console.log("Username Page received message, " , lastJsonMessage); 
     if(lastJsonMessage != null) { 
       if(lastJsonMessage.responseType === RESPONSE_TYPE.ERROR) { 
         alert(lastJsonMessage.data.error); 
@@ -444,14 +428,12 @@ function LandingPage() {
   const [formcontent, setFormcontent] = useState('') // const {formcontent, setFormcontent} = useState('')  => bug vcl
 
   useEffect(() => { 
-    console.log("Received message, " , lastJsonMessage); 
     if(lastJsonMessage != null) { 
       if(lastJsonMessage.responseType === RESPONSE_TYPE.ERROR) { 
         alert(lastJsonMessage.data.error); 
       }
       else {
         setRoomcode(lastJsonMessage.data.roomCode); 
-        console.log(lastJsonMessage.data.roomCode)
       }
     }
   }, [lastJsonMessage, readyState])
@@ -465,7 +447,6 @@ function LandingPage() {
   })
 
   const callJoinRoom = useCallback((e) => { 
-    console.log("entering room:")
     sendJsonMessage({ 
         id: ACTION.JOIN_ROOM, 
         action: ACTION.JOIN_ROOM,
@@ -499,7 +480,6 @@ function App() {
   const [avatar, setAvatar] = useState(null)
   const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(WS_URL, {
     onOpen: () => {
-      console.log('WebSocket connection established.');
     }, 
     share: true, 
     filter: true, 
@@ -511,11 +491,9 @@ function App() {
   return ( // wrapping a state hook inside a context just to update? seems really stupid
     <div className='mw-100 h-100 m-0 p-0'>
         <roomcodeContext.Provider value = {{roomcode, setRoomcode}} >
-          {roomcode === '' && <LandingPage/>} 
-          {/* JSX code must be wrapped inside {} */}
-          {roomcode !== '' && username === '' && <UsernamePage {...{username, setUsername, roomcode, setRoomcode}}/>}
-          {/* {roomcode !== '' && username !== '' && <GameplayPage/>} */}
-          <GameplayPage/>
+          {username === '' && <UsernamePage {...{username, setUsername, roomcode, setRoomcode}}/>}
+          {roomcode === '' && username !== '' && <LandingPage/>}
+          {roomcode !== '' && username !== '' && <GameplayPage/>}
         </roomcodeContext.Provider>
       </div>
   );
