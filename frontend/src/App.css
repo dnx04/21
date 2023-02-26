@@ -43,9 +43,9 @@ button:hover {
 
 #Options { 
   height: 100vh;
-  width: 18vw; 
+  width: 17vw; 
   position: fixed;
-  left: 80%;
+  left: 81%;
   gap: 5vh 0vh 5vh; 
 }
 

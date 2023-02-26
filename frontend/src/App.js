@@ -236,13 +236,16 @@ function HealthBar(props) {
 
 function Card(props) { 
   return (
-    <div className='card text-center d-flex flex-column align-items-center justify-content-center border-warning' style={{borderWidth: "3px", height: '90%', width: '50%', backgroundColor: props.cardName === -1? 'red': 'white'}}>
+    <div className='card text-center d-flex flex-column align-items-center justify-content-center border-warning' style={{borderWidth: "3px", height: '90%', width: '50%', backgroundColor: props.cardName === -1? 'red': props.cardName == null? '#00296B': 'white'}}>
       <div style = {{}}>{props.cardName}</div>
     </div>
   )
 }
 
 function CardTable(props) { 
+  while(props.cardIds.length < 5) { 
+    props.cardIds.push(null); 
+  }
   return (
     <div  className="card-table">
         {props.cardIds.map((cardId) => <div className = "d-flex flex-column justify-content-center"> <Card cardName = {cardId}/> </div>)}
