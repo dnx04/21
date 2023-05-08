@@ -1,3 +1,5 @@
+const WS_URL = 'ws://localhost:3080';
+
 const ACTION = {
     SET_USERNAME: 'setUsername',
     SET_AVATAR: 'setAvatar',
@@ -63,6 +65,7 @@ const ERROR = {
 };
 
 module.exports = {
+    WS_URL, 
     SPELL: SPELL,
     ACTION: ACTION,
     RESPONSE_TYPE: RESPONSE_TYPE,
