@@ -26,7 +26,7 @@ function HealthBar(props) {
     
     const health_bg = props.isYou?  "linear-gradient(to right, red , #00296B)": "linear-gradient(to right, #00296B, red)"
     const health = (<div className='h-100 text-white text-center' style={{width: props.health * 10 + "vw", backgroundImage: health_bg}}>
-      {props.health}
+      {props.isYou && 'Your health'}{!props.isYou && `${props.username}\'s health`}{': ' + props.health + '/10'}
     </div>
     )
   
@@ -45,9 +45,10 @@ function HealthBar(props) {
 }
   
 function Player(props) { 
+    console.log(props)
     const healthBar = (
       <div className='w-100' style = {{height: "5%"}}>
-          <HealthBar avatar = {props.avatar} health = {props.health} isYou = {props.isYou} className="health-bar"/>
+          <HealthBar username={props.username} avatar = {props.avatar} health = {props.health} isYou = {props.isYou} className="health-bar"/>
         </div>
     )
     const spellTable = (

@@ -58,24 +58,24 @@ function GameplayPage() {
     }, [lastJsonMessage])
     
     return (
-      <div id = 'GameplayPage' className='w-100 h-100 p-0 m-0 bg-light'>
+      <div id = 'GameplayPage' className='w-100 h-100 p-0 m-0' style={{backgroundColor: '#00296B'}}>
         { 
           gamestate != null && 
           <div className='w-100 h-100 p-0 m-0'>
-            <Options {...gamestate} />
             <div className='w-100 h-100 p-0 m-0'>
-              <div className='h-50 w-100'>
+              <div className='w-100' style={{height: '45%', position: 'fixed', top: '0%'}}>
                 <Player {...gamestate.player[1 - gamestate.you]} isWinner = {gamestate.you !== gamestate.winner} thisTurn = {gamestate.you !== gamestate.turn} isYou = {false}/>
               </div>
-              <div className='h-50 w-100'>
+              <div className='w-100'style={{height: '45%', position: 'fixed', bottom: '0%'}}>
                 <Player {...gamestate.player[gamestate.you]} isWinner = {gamestate.you === gamestate.winner} thisTurn = {gamestate.you === gamestate.turn} isYou = {true}/>
               </div>
+              <Options {...gamestate} />
              </div>
           </div>
         }
         {
           gamestate == null && 
-          <div className='w-100 h-100 d-flex flex-column align-items-center justify-content-center'>
+          <div className='w-100 h-100 d-flex flex-column align-items-center justify-content-center text-light'>
             <div className=''>Room code: {roomcode} </div>
             <div className=''>Waiting for opponent...</div>
           </div>
