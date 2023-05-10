@@ -2,7 +2,7 @@
   "name": "21online-full",
   "packageManager": "yarn@3.4.1",
   "scripts": {
-		"start": "cd backend && npm start",
+		"start": "cd backend && npm start; cd ../frontend && npm start",
     "build": "cd backend && npm install && cd ../frontend && npm install && npm run build",
 		"install": "cd backend && npm install && cd ../frontend && npm install"
 	}
